@@ -13,11 +13,15 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+import javax.net.ssl.SSLException;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.ghostwan.podtube.library.dmanager.download.TaskStatus.*;
 
 /**
  * Created by Yuan on 27/09/2016:10:44 AM.
@@ -27,40 +31,41 @@ import java.util.List;
 
 public class DownloadTask implements Runnable {
 
+    private static final String TAG = "DownloadTask";
     private OkHttpClient mClient;
 
     private TaskEntity mTaskEntity;
 
-    private List<DownloadTaskListener> listeners;
+    private Map<String, DownloadTaskListener> listeners;
 
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             int code = msg.what;
-            for (DownloadTaskListener listener : listeners) {
+            for (DownloadTaskListener listener : listeners.values()) {
                 switch (code) {
-                    case TaskStatus.TASK_STATUS_QUEUE:
+                    case TASK_STATUS_QUEUE:
                         listener.onQueue(DownloadTask.this);
                         break;
-                    case TaskStatus.TASK_STATUS_CONNECTING:
+                    case TASK_STATUS_CONNECTING:
                         listener.onConnecting(DownloadTask.this);
                         break;
-                    case TaskStatus.TASK_STATUS_DOWNLOADING:
+                    case TASK_STATUS_DOWNLOADING:
                         listener.onStart(DownloadTask.this);
                         break;
-                    case TaskStatus.TASK_STATUS_PAUSE:
+                    case TASK_STATUS_PAUSE:
                         listener.onPause(DownloadTask.this);
                         break;
-                    case TaskStatus.TASK_STATUS_CANCEL:
+                    case TASK_STATUS_CANCEL:
                         listener.onCancel(DownloadTask.this);
                         break;
-                    case TaskStatus.TASK_STATUS_REQUEST_ERROR:
+                    case TASK_STATUS_REQUEST_ERROR:
                         listener.onError(DownloadTask.this, TaskStatus.TASK_STATUS_REQUEST_ERROR);
                         break;
-                    case TaskStatus.TASK_STATUS_STORAGE_ERROR:
+                    case TASK_STATUS_STORAGE_ERROR:
                         listener.onError(DownloadTask.this, TaskStatus.TASK_STATUS_STORAGE_ERROR);
                         break;
-                    case TaskStatus.TASK_STATUS_FINISH:
+                    case TASK_STATUS_FINISH:
                         listener.onFinish(DownloadTask.this);
                         break;
 
@@ -72,7 +77,7 @@ public class DownloadTask implements Runnable {
 
     public DownloadTask(TaskEntity taskEntity) {
         mTaskEntity = taskEntity;
-        listeners = new ArrayList<>();
+        listeners = new HashMap<>();
     }
 
     @Override
@@ -90,8 +95,8 @@ public class DownloadTask implements Runnable {
             mTaskEntity.setFilePath(filePath);
             tempFile = new RandomAccessFile(new File(filePath, fileName), "rwd");
 
-            mTaskEntity.setTaskStatus(TaskStatus.TASK_STATUS_CONNECTING);
-            handler.sendEmptyMessage(TaskStatus.TASK_STATUS_CONNECTING);
+            mTaskEntity.setTaskStatus(TASK_STATUS_CONNECTING);
+            handler.sendEmptyMessage(TASK_STATUS_CONNECTING);
 
             if (DaoManager.instance().queryWidthId(mTaskEntity.getTaskId()) != null) {
                 DaoManager.instance().update(mTaskEntity);
@@ -121,7 +126,7 @@ public class DownloadTask implements Runnable {
                         DaoManager.instance().insertOrReplace(mTaskEntity);
                         mTaskEntity.setTotalSize(responseBody.contentLength());
                     }
-                    mTaskEntity.setTaskStatus(TaskStatus.TASK_STATUS_DOWNLOADING);
+                    mTaskEntity.setTaskStatus(TASK_STATUS_DOWNLOADING);
 
                     double updateSize = mTaskEntity.getTotalSize() / 100;
                     inputStream = responseBody.byteStream();
@@ -129,20 +134,20 @@ public class DownloadTask implements Runnable {
                     byte[] buffer = new byte[1024];
                     int length;
                     int buffOffset = 0;
-                    while ((length = bis.read(buffer)) > 0 && mTaskEntity.getTaskStatus() != TaskStatus.TASK_STATUS_CANCEL && mTaskEntity.getTaskStatus() != TaskStatus.TASK_STATUS_PAUSE) {
+                    while ((length = bis.read(buffer)) > 0 && mTaskEntity.getTaskStatus() != TaskStatus.TASK_STATUS_CANCEL && mTaskEntity.getTaskStatus() != TASK_STATUS_PAUSE) {
                         tempFile.write(buffer, 0, length);
                         completedSize += length;
                         buffOffset += length;
                         mTaskEntity.setCompletedSize(completedSize);
-                        // 避免一直调用数据库
+
                         if (buffOffset >= updateSize) {
                             buffOffset = 0;
                             DaoManager.instance().update(mTaskEntity);
-                            handler.sendEmptyMessage(TaskStatus.TASK_STATUS_DOWNLOADING);
+                            handler.sendEmptyMessage(TASK_STATUS_DOWNLOADING);
                         }
 
                         if (completedSize == mTaskEntity.getTotalSize()) {
-                            handler.sendEmptyMessage(TaskStatus.TASK_STATUS_DOWNLOADING);
+                            handler.sendEmptyMessage(TASK_STATUS_DOWNLOADING);
                             mTaskEntity.setTaskStatus(TaskStatus.TASK_STATUS_FINISH);
                             handler.sendEmptyMessage(TaskStatus.TASK_STATUS_FINISH);
                             DaoManager.instance().update(mTaskEntity);
@@ -158,11 +163,11 @@ public class DownloadTask implements Runnable {
         } catch (FileNotFoundException e) {
             mTaskEntity.setTaskStatus(TaskStatus.TASK_STATUS_STORAGE_ERROR);
             handler.sendEmptyMessage(TaskStatus.TASK_STATUS_STORAGE_ERROR);
-        } catch (SocketTimeoutException | ConnectException e) {
+        } catch (SocketTimeoutException | ConnectException | SSLException | UnknownHostException e) {
             mTaskEntity.setTaskStatus(TaskStatus.TASK_STATUS_REQUEST_ERROR);
             handler.sendEmptyMessage(TaskStatus.TASK_STATUS_REQUEST_ERROR);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.i(TAG, "error : ", e);
         } finally {
             IOUtils.close(bis, inputStream, tempFile);
         }
@@ -173,14 +178,14 @@ public class DownloadTask implements Runnable {
     }
 
     void pause() {
-        mTaskEntity.setTaskStatus(TaskStatus.TASK_STATUS_PAUSE);
+        mTaskEntity.setTaskStatus(TASK_STATUS_PAUSE);
         DaoManager.instance().update(mTaskEntity);
-        handler.sendEmptyMessage(TaskStatus.TASK_STATUS_PAUSE);
+        handler.sendEmptyMessage(TASK_STATUS_PAUSE);
     }
 
     void queue() {
-        mTaskEntity.setTaskStatus(TaskStatus.TASK_STATUS_QUEUE);
-        handler.sendEmptyMessage(TaskStatus.TASK_STATUS_QUEUE);
+        mTaskEntity.setTaskStatus(TASK_STATUS_QUEUE);
+        handler.sendEmptyMessage(TASK_STATUS_QUEUE);
     }
 
     void cancel() {
@@ -193,12 +198,12 @@ public class DownloadTask implements Runnable {
         this.mClient = mClient;
     }
 
-    public void addListener(DownloadTaskListener listener) {
-        listeners.add(listener);
+    public void addListener(String key, DownloadTaskListener listener) {
+        listeners.put(key, listener);
     }
 
-    public void removeListener(DownloadTaskListener listener) {
-        listeners.remove(listener);
+    public void removeListener(String key) {
+        listeners.remove(key);
     }
 
 

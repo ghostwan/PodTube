@@ -21,9 +21,12 @@
 	<string name="resume">Resume</string>
 	<string name="delete">Delete</string>
 	<string name="failure">Failed!</string>
+	<string name="detail">Detail</string>
+	<string name="play">Play</string>
 	<string name="retry">Retry</string>
 	<string name="connecting">Connecting…</string>
 	<string name="queue">Queue</string>
 	<string name="request_error">Request error</string>
 	<string name="storage_error">Not enough space</string>
+	<string name="action_title">Choose an action</string>
 </resources>

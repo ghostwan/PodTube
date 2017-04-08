@@ -53,7 +53,7 @@ public class DownloadManager {
     }
 
     public boolean isTasks() {
-        return !mCurrentTaskList.isEmpty();
+        return !DaoManager.instance().queryAll().isEmpty();
     }
 
     /**
@@ -137,8 +137,8 @@ public class DownloadManager {
         }
     }
 
-    public Map<String, DownloadTask> getmCurrentTaskList() {
-        return mCurrentTaskList;
+    public List<TaskEntity> getTaskEntities() {
+        return DaoManager.instance().queryAll();
     }
 
     /**
@@ -180,7 +180,7 @@ public class DownloadManager {
                 File temp = new File(taskEntity.getFilePath(), taskEntity.getFileName());
                 if (temp.exists()) {
                     if (temp.delete()) {
-                        if (BuildConfig.DEBUG) Log.d("DownloadManager", "delete temp file!");
+                        if (BuildConfig.DEBUG) Log.d("DownloadManager", "delete file : "+taskEntity.getFileName());
                     }
                 }
             }
