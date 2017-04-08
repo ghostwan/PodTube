@@ -22,6 +22,7 @@ public class TaskEntity {
      + "completedSize LONG,"
      + "url TEXT,"
      + "title TEXT,"
+     + "type TEXT,"
      + "filePath TEXT,"
      + "fileName TEXT,"
      + "taskStatus INTEGER" + ");";
@@ -39,6 +40,8 @@ public class TaskEntity {
     @Property
     private String title;
     @Property
+    private String type;
+    @Property
     private String filePath;
     @Property
     private String fileName;
@@ -51,21 +54,23 @@ public class TaskEntity {
         this.totalSize = builder.totalSize;
         this.completedSize = builder.completedSize;
         this.url = builder.url;
+        this.type = builder.type;
         this.title = builder.title;
         this.filePath = builder.filePath;
         this.fileName = builder.fileName;
         this.taskStatus = builder.taskStatus;
     }
 
-    @Generated(hash = 1981671222)
+    @Generated(hash = 491733231)
     public TaskEntity(Long id, String taskId, long totalSize, long completedSize, String url,
-            String title, String filePath, String fileName, int taskStatus) {
+            String title, String type, String filePath, String fileName, int taskStatus) {
         this.id = id;
         this.taskId = taskId;
         this.totalSize = totalSize;
         this.completedSize = completedSize;
         this.url = url;
         this.title = title;
+        this.type = type;
         this.filePath = filePath;
         this.fileName = fileName;
         this.taskStatus = taskStatus;
@@ -159,6 +164,8 @@ public class TaskEntity {
         private String url;
         // file title
         private String title;
+        // file type
+        private String type;
         // file save path
         private String filePath;
         // file name
@@ -189,6 +196,11 @@ public class TaskEntity {
 
         public Builder title(String title) {
             this.title = title;
+            return this;
+        }
+
+        public Builder type(String type) {
+            this.type = type;
             return this;
         }
 
@@ -233,5 +245,13 @@ public class TaskEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return this.type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

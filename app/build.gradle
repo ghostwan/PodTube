@@ -22,7 +22,7 @@ android {
 }
 
 greendao {
-    schemaVersion 2
+    schemaVersion 3
 }
 
 dependencies {
@@ -59,6 +59,7 @@ dependencies {
 
     compile 'com.squareup.okhttp3:okhttp:3.3.1'
     compile 'com.squareup.okhttp3:logging-interceptor:3.0.1'
+    compile 'net.zetetic:android-database-sqlcipher:3.5.6@aar'
 
     // Unit test library
     testCompile 'junit:junit:4.12'

@@ -1,8 +1,13 @@
 package com.ghostwan.podtube;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.icu.text.DecimalFormat;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -12,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.*;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -20,6 +26,8 @@ import com.ghostwan.podtube.library.dmanager.download.DownloadTask;
 import com.ghostwan.podtube.library.dmanager.download.DownloadTaskListener;
 import com.ghostwan.podtube.library.dmanager.download.TaskEntity;
 
+
+import java.io.File;
 
 import static com.ghostwan.podtube.library.dmanager.download.TaskStatus.*;
 
@@ -64,6 +72,13 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         holder.titleView.setText(taskEntity.getTitle());
         holder.itemView.setTag(taskEntity.getUrl());
 
+//        holder.progressBar.setProgressTintList();
+        if(taskEntity.getType().equals("video")) {
+            int color = Color.parseColor("#377be8"); //The color u want
+            holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+
         int status = taskEntity.getTaskStatus();
         DownloadTask itemTask = mDownloadManager.getTask(taskEntity.getTaskId());
         responseUIListener(itemTask, holder);
@@ -72,7 +87,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             case TASK_STATUS_INIT:
                 boolean isPause = mDownloadManager.isPauseTask(taskEntity.getTaskId());
                 boolean isFinish = mDownloadManager.isFinishTask(taskEntity.getTaskId());
-                holder.downloadButton.setImageResource(isFinish ? R.drawable.ic_delete : !isPause ? R.drawable.ic_start: R.drawable.ic_resume);
+                holder.downloadButton.setImageResource(isFinish ? R.drawable.ic_play : !isPause ? R.drawable.ic_start: R.drawable.ic_resume);
                 holder.progressBar.setProgress(Integer.parseInt(progress));
                 holder.progressView.setText(progress);
                 break;
@@ -97,7 +112,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 holder.progressView.setText(progress);
                 break;
             case TASK_STATUS_FINISH:
-                holder.downloadButton.setImageResource(R.drawable.ic_delete);
+                holder.downloadButton.setImageResource(R.drawable.ic_play);
                 holder.progressBar.setProgress(Integer.parseInt(progress));
                 holder.progressView.setText(progress);
                 break;
@@ -148,7 +163,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                             mDownloadManager.resumeTask(itemTask);
                             break;
                         case TASK_STATUS_FINISH:
-                            delete(itemTask);
+                            play(itemTask);
                             break;
                         case TASK_STATUS_REQUEST_ERROR:
                             mDownloadManager.addTask(itemTask);
@@ -171,6 +186,35 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 return true;
             }
         });
+    }
+
+    private void play(DownloadTask itemTask) {
+        TaskEntity entity = itemTask.getTaskEntity();
+        Intent intent = new Intent();
+        intent.setAction(android.content.Intent.ACTION_VIEW);
+        Log.i(TAG, "Opening : "+entity.getFilePath()+"/"+entity.getFileName());
+        File file = new File(entity.getFilePath(), entity.getFileName());
+        Uri uri = Uri.fromFile(file);
+        String mimetype = getMimeType(uri);
+        if (mimetype == null) {
+            mimetype = "audio/*";
+        }
+        intent.setDataAndType(uri,  mimetype );
+        mContext.startActivity(intent);
+    }
+
+    public String getMimeType(Uri uri) {
+        String mimeType = null;
+        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            ContentResolver cr = mContext.getContentResolver();
+            mimeType = cr.getType(uri);
+        } else {
+            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri
+                    .toString());
+            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                    fileExtension.toLowerCase());
+        }
+        return mimeType;
     }
 
     private void delete(DownloadTask itemTask) {
@@ -245,7 +289,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             @Override
             public void onFinish(DownloadTask downloadTask) {
                 if (holder.itemView.getTag().equals(taskEntity.getUrl())) {
-                    holder.downloadButton.setImageResource(R.drawable.ic_delete);
+                    holder.downloadButton.setImageResource(R.drawable.ic_play);
                 }
             }
 

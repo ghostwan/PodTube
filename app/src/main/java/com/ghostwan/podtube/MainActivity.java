@@ -79,6 +79,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(activityIntent);
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         if(DownloadManager.getInstance().isTasks())
             fab.setVisibility(View.VISIBLE);
         else

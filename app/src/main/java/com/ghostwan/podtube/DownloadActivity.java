@@ -159,12 +159,12 @@ public class DownloadActivity extends Activity{
                 filename += (ytFrVideo.height == -1) ? "" : "-" + ytFrVideo.height + "p";
                 boolean hideAudioDownloadNotification = false;
                 if (ytFrVideo.videoFile != null) {
-                    downloadFromUrl(ytFrVideo.videoFile.getUrl(), videoTitle,
+                    downloadFromUrl("video", ytFrVideo.videoFile.getUrl(), videoTitle,
                             filename + "." + ytFrVideo.videoFile.getFormat().getExt(), false);
                     hideAudioDownloadNotification = true;
                 }
                 if (ytFrVideo.audioFile != null) {
-                    downloadFromUrl(ytFrVideo.audioFile.getUrl(), videoTitle,
+                    downloadFromUrl("audio", ytFrVideo.audioFile.getUrl(), videoTitle,
                             filename + "." + ytFrVideo.audioFile.getFormat().getExt(), hideAudioDownloadNotification);
                 }
                 finish();
@@ -173,10 +173,11 @@ public class DownloadActivity extends Activity{
         mainLayout.addView(btn);
     }
 
-    private void downloadFromUrl(String youtubeDlUrl, String downloadTitle, String fileName, boolean hide) {
+    private void downloadFromUrl(String type, String youtubeDlUrl, String downloadTitle, String fileName, boolean hide) {
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         final TaskEntity taskEntity = new TaskEntity.Builder()
                 .url(youtubeDlUrl)
+                .type(type)
                 .fileName(fileName)
                 .title(downloadTitle)
                 .filePath(path.getAbsolutePath())
