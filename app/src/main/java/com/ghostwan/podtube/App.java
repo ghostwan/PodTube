@@ -1,7 +1,7 @@
 package com.ghostwan.podtube;
 
 import android.app.Application;
-import com.liulishuo.filedownloader.FileDownloader;
+import com.ghostwan.podtube.library.dmanager.download.DownloadManager;
 import teaspoon.TeaSpoon;
 
 /**
@@ -14,6 +14,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         TeaSpoon.initialize();
-        FileDownloader.init(getApplicationContext());
+        DownloadManager.getInstance().init(this, 3);
     }
+
+
 }

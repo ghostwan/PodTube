@@ -36,10 +36,11 @@
 				android:label="@string/title_activity_feed"
 				android:theme="@style/AppTheme.NoActionBar">
 		</activity>
-		<activity android:name=".DispatchActivity"
-		          android:excludeFromRecents="true"
-		          android:theme="@style/PopUpTheme"
-		          android:taskAffinity="">
+		<activity
+				android:name=".DispatchActivity"
+				android:excludeFromRecents="true"
+				android:taskAffinity=""
+				android:theme="@style/PopUpTheme">
 			<intent-filter>
 				<action android:name="android.intent.action.SEND"/>
 
@@ -47,6 +48,9 @@
 
 				<data android:mimeType="text/plain"/>
 			</intent-filter>
+		</activity>
+		<activity android:name=".DownloadingActivity"
+				android:label="@string/title_activity_downloading">
 		</activity>
 	</application>
 

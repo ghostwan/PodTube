@@ -12,4 +12,5 @@ public class Util {
         String strMeatFormat = ctx.getString(resID);
         return String.format(strMeatFormat, data);
     }
+
 }

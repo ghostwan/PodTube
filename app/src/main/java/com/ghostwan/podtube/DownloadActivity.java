@@ -2,12 +2,9 @@ package com.ghostwan.podtube;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.DownloadManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -23,15 +20,17 @@ import android.widget.*;
 import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YtFile;
+import com.ghostwan.podtube.library.dmanager.download.DownloadManager;
+import com.ghostwan.podtube.library.dmanager.download.DownloadTask;
+import com.ghostwan.podtube.library.dmanager.download.TaskEntity;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class DownloadActivity extends Activity {
+public class DownloadActivity extends Activity{
 
     private static final int ITAG_FOR_AUDIO = 140;
     private static final String TAG = "DownloadActivity";
@@ -39,8 +38,8 @@ public class DownloadActivity extends Activity {
 
     private LinearLayout mainLayout;
     private ProgressBar mainProgressBar;
-    private static final String RSS_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=";
     private List<YtFragmentedVideo> formatsToShowList;
+    private DownloadManager downloadManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +52,7 @@ public class DownloadActivity extends Activity {
         if (checkPermission()) {
             getYoutubeDownloadUrl();
         }
+        downloadManager = DownloadManager.getInstance();
 
     }
 
@@ -157,49 +157,32 @@ public class DownloadActivity extends Activity {
                 }
                 filename = filename.replaceAll("\\\\|>|<|\"|\\||\\*|\\?|%|:|#|/", "");
                 filename += (ytFrVideo.height == -1) ? "" : "-" + ytFrVideo.height + "p";
-                String downloadIds = "";
                 boolean hideAudioDownloadNotification = false;
                 if (ytFrVideo.videoFile != null) {
-                    downloadIds += downloadFromUrl(ytFrVideo.videoFile.getUrl(), videoTitle,
+                    downloadFromUrl(ytFrVideo.videoFile.getUrl(), videoTitle,
                             filename + "." + ytFrVideo.videoFile.getFormat().getExt(), false);
-                    downloadIds += "-";
                     hideAudioDownloadNotification = true;
                 }
                 if (ytFrVideo.audioFile != null) {
-                    downloadIds += downloadFromUrl(ytFrVideo.audioFile.getUrl(), videoTitle,
+                    downloadFromUrl(ytFrVideo.audioFile.getUrl(), videoTitle,
                             filename + "." + ytFrVideo.audioFile.getFormat().getExt(), hideAudioDownloadNotification);
                 }
-                if (ytFrVideo.audioFile != null)
-                    cacheDownloadIds(downloadIds);
                 finish();
             }
         });
         mainLayout.addView(btn);
     }
 
-    private long downloadFromUrl(String youtubeDlUrl, String downloadTitle, String fileName, boolean hide) {
-        Uri uri = Uri.parse(youtubeDlUrl);
-        DownloadManager.Request request = new DownloadManager.Request(uri);
-        request.setTitle(downloadTitle);
-        if (hide) {
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
-            request.setVisibleInDownloadsUi(false);
-        } else
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "/Youtube/" + fileName);
-
-        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        return manager.enqueue(request);
-    }
-
-    private void cacheDownloadIds(String downloadIds) {
-        File dlCacheFile = new File(this.getCacheDir().getAbsolutePath() + "/" + downloadIds);
-        try {
-            dlCacheFile.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void downloadFromUrl(String youtubeDlUrl, String downloadTitle, String fileName, boolean hide) {
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        final TaskEntity taskEntity = new TaskEntity.Builder()
+                .url(youtubeDlUrl)
+                .fileName(fileName)
+                .title(downloadTitle)
+                .filePath(path.getAbsolutePath())
+                .build();
+        DownloadTask itemTask = new DownloadTask(taskEntity);
+        downloadManager.addTask(itemTask);
     }
 
     private class YtFragmentedVideo {

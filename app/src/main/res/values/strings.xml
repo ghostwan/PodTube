@@ -3,6 +3,7 @@
 	<string name="action_settings">Settings</string>
 	<string name="title_activity_subscribe">SuscribeActivity</string>
 	<string name="title_activity_scrolling">ScrollingActivity</string>
+	<string name="title_activity_downloading">Download list</string>
 	<string name="feed_description">
 		"Youtube feed description"
 	</string>
@@ -13,4 +14,16 @@
         <a href="https://github.com/HaarigerHarald/android-youtubeExtractor/releases/latest">latest GitHub release</a></string>
 	<string name="title_activity_feed">FeedActivity</string>
 	<string name="feed_add_library">Feed %1$s add to the library</string>
+	<string name="start">Start</string>
+	<string name="pause">Pause</string>
+	<string name="wait">Wait</string>
+	<string name="cancel">Cancel</string>
+	<string name="resume">Resume</string>
+	<string name="delete">Delete</string>
+	<string name="failure">Failed!</string>
+	<string name="retry">Retry</string>
+	<string name="connecting">Connecting…</string>
+	<string name="queue">Queue</string>
+	<string name="request_error">Request error</string>
+	<string name="storage_error">Not enough space</string>
 </resources>

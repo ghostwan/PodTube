@@ -30,6 +30,6 @@
 			android:layout_gravity="bottom|end"
 			android:layout_margin="@dimen/fab_margin"
 			android:tint="#FFFFFF"
-			app:srcCompat="@drawable/ic_rss_feed"/>
+			app:srcCompat="@drawable/ic_file_download_black_24dp"/>
 
 </android.support.design.widget.CoordinatorLayout>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:app="http://schemas.android.com/apk/lib/com.app.chasebank"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		app:cardPreventCornerOverlap="true"
+		app:cardUseCompatPadding="true">
+
+	<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="80dp"
+			android:gravity="center"
+			android:orientation="horizontal"
+			android:weightSum="10">
+
+		<TextView
+				android:id="@+id/list_item_title"
+				style="@style/TextAppearance.AppCompat.Small"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="4"
+				android:text="Title"/>
+
+		<ProgressBar
+				android:id="@+id/list_item_progress_bar"
+				style="?android:attr/progressBarStyleHorizontal"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_marginLeft="6dp"
+				android:layout_marginRight="6dp"
+				android:layout_weight="3"/>
+
+		<TextView
+				android:id="@+id/list_item_progress_text"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="0"/>
+
+		<Button
+				android:id="@+id/list_item_state_button"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="2"
+				android:text="Start"/>
+
+	</LinearLayout>
+</android.support.v7.widget.CardView>

@@ -4,12 +4,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BaseTransientBottomBar;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.*;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import com.ghostwan.podtube.library.dmanager.download.DownloadManager;
 
 import java.util.List;
 
@@ -19,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private List<FeedInfo> feeds;
     private PrefManager prefManager;
     private ListView listView;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +31,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         prefManager = new PrefManager(this);
         listView = (ListView) findViewById(R.id.listView);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent activityIntent = new Intent(MainActivity.this, DownloadingActivity.class);
+                startActivity(activityIntent);
+            }
+        });
+        fab.setVisibility(View.GONE);
     }
 
     @Override
@@ -65,6 +79,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(activityIntent);
             }
         });
+        if(DownloadManager.getInstance().isTasks())
+            fab.setVisibility(View.VISIBLE);
+        else
+            fab.setVisibility(View.GONE);
     }
 
     @Override
@@ -77,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
     private class FeedAdapter extends ArrayAdapter<FeedInfo> {
 
         public FeedAdapter(Context context, List<FeedInfo> feedsInfo) {
-            super(context, 0, feedsInfo );
+            super(context, 0, feedsInfo);
         }
 
         @NonNull
