@@ -7,6 +7,11 @@ This app allows you to download a youtube video or subscribe to a youtube channe
 The main goal is to be able to subscribe to a channel or a user as we subscribe to podcast. 
 To either have an audio or video podcast from youtube.
 
+If you share a youtube user / channel page with pushbullet open it on your phone,
+click on the share button and select PodTube you will be able to subscribe to this feed
+
+For example : https://www.youtube.com/user/CNN
+
 ## Libraries:
 
 - Android based YouTube url extractor : https://github.com/HaarigerHarald/android-youtubeExtractor
