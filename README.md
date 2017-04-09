@@ -15,3 +15,16 @@ To either have an audio or video podcast from youtube.
 - Json Parser : https://github.com/google/gson
 - File Downloader : https://github.com/lingochamp/FileDownloader
 
+## TODO (next):
+
+- Manually parse feed xml to retrieve the feed / item cover and description
+- Find a way to easily subscribe to a feed/user without going through pushbullet.
+- Send a notification when a download start / end
+- Allow to choose in which directory do download (in a settings are at download time)
+- Find a way to be podcast player compatible
+- Search for feed to add
+- Delete a feed 
+- Have a cleaner UI
+- Improve code
+
+
