@@ -29,4 +29,9 @@
 	<string name="request_error">Request error</string>
 	<string name="storage_error">Not enough space</string>
 	<string name="action_title">Choose an action</string>
+	<string name="action_podtube_directory">Goto PodTube directory</string>
+	<string name="start_download">Start Download</string>
+	<string name="queue_download">Queue Download</string>
+	<string name="error_download">Download Error</string>
+	<string name="download_finished">Download Finished!</string>
 </resources>

@@ -85,6 +85,10 @@ public class TaskEntity {
         return taskId;
     }
 
+    public int getHashCode() {
+        return url.hashCode();
+    }
+
     public long getTotalSize() {
         return totalSize;
     }

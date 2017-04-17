@@ -174,13 +174,16 @@ public class DownloadActivity extends Activity{
     }
 
     private void downloadFromUrl(String type, String youtubeDlUrl, String downloadTitle, String fileName, boolean hide) {
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File folder = new File(Environment.getExternalStorageDirectory() + "/PodTube");
+        if(!folder.exists())
+            folder.mkdir();
+//        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         final TaskEntity taskEntity = new TaskEntity.Builder()
                 .url(youtubeDlUrl)
                 .type(type)
                 .fileName(fileName)
                 .title(downloadTitle)
-                .filePath(path.getAbsolutePath())
+                .filePath(folder.getAbsolutePath())
                 .build();
         DownloadTask itemTask = new DownloadTask(taskEntity);
         downloadManager.addTask(itemTask);

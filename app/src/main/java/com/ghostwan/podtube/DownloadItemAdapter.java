@@ -42,21 +42,10 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     private Context mContext;
 
     private DownloadManager mDownloadManager;
-    private CharSequence dialogActions[];
-
-    private static final int DIALOG_ACTION_DETAIL = 0;
-    private static final int DIALOG_ACTION_PLAY = 1;
-    private static final int DIALOG_ACTION_DELETE = 2;
 
     DownloadItemAdapter(Context context) {
         mContext = context;
         mDownloadManager = DownloadManager.getInstance();
-
-        dialogActions = new CharSequence[]{
-                mContext.getString(R.string.detail),
-                mContext.getString(R.string.play),
-                mContext.getString(R.string.delete)
-        };
     }
 
     @Override
@@ -73,21 +62,27 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         holder.itemView.setTag(taskEntity.getUrl());
 
 //        holder.progressBar.setProgressTintList();
-        if(taskEntity.getType().equals("video")) {
+        if (taskEntity.getType().equals("video")) {
             int color = Color.parseColor("#377be8"); //The color u want
             holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
             holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+
+        if (mDownloadManager.isFileError(taskEntity.getTaskId())) {
+            taskEntity.setTaskStatus(TASK_STATUS_STORAGE_ERROR);
         }
 
         int status = taskEntity.getTaskStatus();
         DownloadTask itemTask = mDownloadManager.getTask(taskEntity.getTaskId());
         responseUIListener(itemTask, holder);
         String progress = getPercent(taskEntity.getCompletedSize(), taskEntity.getTotalSize());
+
+
         switch (status) {
             case TASK_STATUS_INIT:
                 boolean isPause = mDownloadManager.isPauseTask(taskEntity.getTaskId());
                 boolean isFinish = mDownloadManager.isFinishTask(taskEntity.getTaskId());
-                holder.downloadButton.setImageResource(isFinish ? R.drawable.ic_play : !isPause ? R.drawable.ic_start: R.drawable.ic_resume);
+                holder.downloadButton.setImageResource(isFinish ? R.drawable.ic_play : !isPause ? R.drawable.ic_start : R.drawable.ic_resume);
                 holder.progressBar.setProgress(Integer.parseInt(progress));
                 holder.progressView.setText(progress);
                 break;
@@ -117,11 +112,11 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 holder.progressView.setText(progress);
                 break;
             case TASK_STATUS_REQUEST_ERROR:
-                holder.downloadButton.setImageResource(R.drawable.ic_retry);
+                holder.downloadButton.setImageResource(R.drawable.ic_error);
                 holder.progressBar.setProgress(Integer.parseInt(progress));
                 holder.progressView.setText(progress);
             case TASK_STATUS_STORAGE_ERROR:
-                holder.downloadButton.setImageResource(R.drawable.ic_retry);
+                holder.downloadButton.setImageResource(R.drawable.ic_error);
                 holder.progressBar.setProgress(Integer.parseInt(progress));
                 holder.progressView.setText(progress);
                 break;
@@ -166,10 +161,10 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                             play(itemTask);
                             break;
                         case TASK_STATUS_REQUEST_ERROR:
-                            mDownloadManager.addTask(itemTask);
+                            showErrorDialog(itemTask);
                             break;
                         case TASK_STATUS_STORAGE_ERROR:
-                            mDownloadManager.addTask(itemTask);
+                            showErrorDialog(itemTask);
                             break;
                     }
                 }
@@ -182,7 +177,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 String url = taskEntity.getUrl();
                 String taskId = String.valueOf(url.hashCode());
                 DownloadTask itemTask = mDownloadManager.getTask(taskId);
-                showDialog(itemTask);
+                showOptionDialog(itemTask);
                 return true;
             }
         });
@@ -192,14 +187,14 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         TaskEntity entity = itemTask.getTaskEntity();
         Intent intent = new Intent();
         intent.setAction(android.content.Intent.ACTION_VIEW);
-        Log.i(TAG, "Opening : "+entity.getFilePath()+"/"+entity.getFileName());
+        Log.i(TAG, "Opening : " + entity.getFilePath() + "/" + entity.getFileName());
         File file = new File(entity.getFilePath(), entity.getFileName());
         Uri uri = Uri.fromFile(file);
         String mimetype = getMimeType(uri);
         if (mimetype == null) {
             mimetype = "audio/*";
         }
-        intent.setDataAndType(uri,  mimetype );
+        intent.setDataAndType(uri, mimetype);
         mContext.startActivity(intent);
     }
 
@@ -222,18 +217,55 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         notifyDataSetChanged();
     }
 
+    private void retry(DownloadTask itemTask) {
+        mDownloadManager.resetTask(itemTask);
+        notifyDataSetChanged();
+    }
 
-    private void showDialog(final DownloadTask itemTask) {
-        final
 
+    private void showOptionDialog(final DownloadTask itemTask) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.action_title);
-        builder.setItems(dialogActions, new DialogInterface.OnClickListener() {
+        final CharSequence[] optionDialogActions = {
+                mContext.getString(R.string.play), // Option 0
+                mContext.getString(R.string.delete) // Option 1
+        };
+        builder.setItems(optionDialogActions, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.i(TAG, "Choice is "+ dialogActions[which]);
+                Log.i(TAG, "Choice is " + optionDialogActions[which]);
                 switch (which) {
-                    case DIALOG_ACTION_DELETE : delete(itemTask);break;
+                    case 0:
+                        play(itemTask);
+                        break;
+                    case 1:
+                        delete(itemTask);
+                        break;
+                }
+            }
+        });
+        builder.show();
+    }
+
+
+    private void showErrorDialog(final DownloadTask itemTask) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle(R.string.action_title);
+        final CharSequence[] optionDialogActions = {
+                mContext.getString(R.string.retry), // Option 0
+                mContext.getString(R.string.delete) // Option 1
+        };
+        builder.setItems(optionDialogActions, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i(TAG, "Choice is " + optionDialogActions[which]);
+                switch (which) {
+                    case 0:
+                        retry(itemTask);
+                        break;
+                    case 1:
+                        delete(itemTask);
+                        break;
                 }
             }
         });
@@ -297,7 +329,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             public void onError(DownloadTask downloadTask, int codeError) {
                 if (holder.itemView.getTag().equals(taskEntity.getUrl())) {
 
-                    holder.downloadButton.setImageResource(R.drawable.ic_retry);
+                    holder.downloadButton.setImageResource(R.drawable.ic_error);
                     switch (codeError) {
                         case TASK_STATUS_REQUEST_ERROR:
                             Toast.makeText(mContext, R.string.request_error, Toast.LENGTH_SHORT).show();

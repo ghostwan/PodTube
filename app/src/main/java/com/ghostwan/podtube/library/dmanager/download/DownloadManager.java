@@ -1,11 +1,14 @@
 package com.ghostwan.podtube.library.dmanager.download;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 import com.ghostwan.podtube.BuildConfig;
+import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.library.dmanager.db.DaoManager;
 import com.ghostwan.podtube.library.dmanager.utils.Constants;
 import okhttp3.OkHttpClient;
@@ -17,6 +20,9 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static com.ghostwan.podtube.library.dmanager.download.TaskStatus.TASK_STATUS_FINISH;
+import static com.ghostwan.podtube.library.dmanager.download.TaskStatus.TASK_STATUS_INIT;
 
 public class DownloadManager {
 
@@ -40,6 +46,9 @@ public class DownloadManager {
 
     // greenDao seesion
     private DaoSession mDaoSession;
+
+    private Context ctx;
+    private NotificationManager notificationManager;
 
     private DownloadManager() {
 
@@ -81,6 +90,8 @@ public class DownloadManager {
         setupDatabase(context);
 
         recoveryTaskState();
+        ctx = context;
+        notificationManager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         mClient = client;
         mThreadCount = threadCount < 1 ? 1 : threadCount <= Constants.MAX_THREAD_COUNT ? threadCount : Constants.MAX_THREAD_COUNT;
         mExecutor = new ThreadPoolExecutor(mThreadCount, mThreadCount, 20, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
@@ -126,6 +137,41 @@ public class DownloadManager {
 
         if (taskEntity != null && taskEntity.getTaskStatus() != TaskStatus.TASK_STATUS_DOWNLOADING) {
             task.setClient(mClient);
+            task.addListener("manager", new DownloadTaskListener() {
+                @Override
+                public void onQueue(DownloadTask downloadTask) {
+                    displayNotification(R.string.queue_download, downloadTask);
+                }
+
+                @Override
+                public void onConnecting(DownloadTask downloadTask) {
+                    displayNotification(R.string.start_download, downloadTask);
+                }
+
+                @Override
+                public void onStart(DownloadTask downloadTask) {
+                }
+
+                @Override
+                public void onPause(DownloadTask downloadTask) {
+
+                }
+
+                @Override
+                public void onCancel(DownloadTask downloadTask) {
+
+                }
+
+                @Override
+                public void onFinish(DownloadTask downloadTask) {
+                    displayNotification(R.string.download_finished, downloadTask);
+                }
+
+                @Override
+                public void onError(DownloadTask downloadTask, int code) {
+                    displayNotification(R.string.error_download, downloadTask);
+                }
+            });
             mCurrentTaskList.put(taskEntity.getTaskId(), task);
             if (!mQueue.contains(task)) {
                 mExecutor.execute(task);
@@ -135,6 +181,18 @@ public class DownloadManager {
                 task.queue();
             }
         }
+    }
+
+    private void displayNotification (int title, DownloadTask downloadTask) {
+        // Build the notification and add the action.
+        Notification newMessageNotification =
+                new Notification.Builder(ctx)
+                        .setSmallIcon(R.drawable.ic_file_download_black_24dp)
+                        .setContentTitle(ctx.getString(title))
+                        .setContentText(downloadTask.getTaskEntity().getTitle())
+                        .build();
+        int id = downloadTask.getTaskEntity().getHashCode();
+        notificationManager.notify(id, newMessageNotification);
     }
 
     public List<TaskEntity> getTaskEntities() {
@@ -158,6 +216,18 @@ public class DownloadManager {
         addTask(task);
     }
 
+
+    public void resetTask(DownloadTask task) {
+        if(task == null) return;
+        TaskEntity taskEntity = task.getTaskEntity();
+        if (taskEntity != null) {
+            File file = new File(taskEntity.getFilePath(), taskEntity.getFilePath());
+            if (file.exists())
+                file.delete();
+            taskEntity.setCompletedSize(0);
+            taskEntity.setTaskStatus(TASK_STATUS_INIT);
+        }
+    }
 
     /**
      * cancel task
@@ -224,6 +294,17 @@ public class DownloadManager {
             File file = new File(entity.getFilePath(), entity.getFileName());
             if (file.exists()) {
                 return file.length() == entity.getTotalSize();
+            }
+        }
+        return false;
+    }
+
+    public boolean isFileError(String id) {
+        TaskEntity entity = DaoManager.instance().queryWidthId(id);
+        if (entity != null) {
+            File file = new File(entity.getFilePath(), entity.getFileName());
+            if(entity.getTaskStatus() == TASK_STATUS_FINISH && !file.exists()) {
+                return true;
             }
         }
         return false;
