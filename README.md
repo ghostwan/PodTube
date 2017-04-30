@@ -53,4 +53,6 @@ Or you can directly from your phone share a video or a playlist to either downlo
 - Have a cleaner UI
 - Improve code
 
+WARNING: PUTTING PODTUBE OR ANY FORK OF IT INTO GOOGLE PLAYSTORE VIOLATES THEIR TERMS OF CONDITIONS.
+
 
