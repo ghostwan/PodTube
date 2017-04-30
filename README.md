@@ -10,8 +10,12 @@ click on the share button and select PodTube you will be able to subscribe to th
 
 For example : https://www.youtube.com/user/CNN
 
-## What's new:
+## What's new in 
+### 1.1.0:
 - Manage playlist : you can now share a playlist from pushBullet or the share android button
+### 1.0.0:
+- New download manager
+- Display notifications when a download start / end
 - You can retry / delete / play a download item
 
 ## Screenshots
