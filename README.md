@@ -10,9 +10,14 @@ click on the share button and select PodTube you will be able to subscribe to th
 
 For example : https://www.youtube.com/user/CNN
 
+### Browse a feed 
 ![alt text](screenshots/add_feed.png "browse a feed list (user/channel/playlist)")
-![alt text](screenshots/feed_added.png "add a feed to your library")
-![alt text](screenshots/feed_added.png "add a feed to your library")
+### Feed library
+![alt text](screenshots/feed_list.png "Library list")
+### Download video / audio
+![alt text](screenshots/download_item.png "Library list")
+### Download Manager
+![alt text](screenshots/download_manager.png "Library list")
 
 ## Libraries:
 
