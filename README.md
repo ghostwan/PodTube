@@ -1,9 +1,9 @@
 # PodTube
 
-Because youtube RED is not available in most country, this app allows you to download a youtube video or subscribe to a youtube channel.
+Because [youtube RED](https://www.youtube.com/red) is not available in most country, this app allows you to download a youtube video or subscribe to a youtube channel.
 
 The main goal is to be able to subscribe to a channel or a user as we subscribe to podcast. 
-To either have an audio or video podcast from youtube.
+To either have an audio or video podcast from youtube and be able to play in background our favorites youtube shows.
 
 If you share a youtube user / channel / playlist page with [pushbullet](https://www.pushbullet.com/) open it on your phone,
 click on the share button and select PodTube you will be able to subscribe to this feed
