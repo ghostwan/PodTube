@@ -12,10 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.*;
 import com.einmalfel.earl.EarlParser;
 import com.einmalfel.earl.Feed;
 import com.einmalfel.earl.Item;
@@ -32,6 +29,7 @@ public class FeedActivity extends AppCompatActivity {
 
     public static final String RSS_URL_CHANNEL = "https://www.youtube.com/feeds/videos.xml?channel_id=";
     public static final String RSS_URL_USER = "https://www.youtube.com/feeds/videos.xml?user=";
+    public static final String RSS_URL_PLAYLIST = "https://www.youtube.com/feeds/videos.xml?playlist_id=";
     private static final String TAG = "FeedActivity";
     private ListView listView;
     private Context ctx;
@@ -82,9 +80,28 @@ public class FeedActivity extends AppCompatActivity {
 
     @OnBackground
     protected void fetchFeed(String url) {
+        Log.i(TAG, "Url to fetch : "+url);
+
         String[] splits = url.split("/");
         String feedID = splits[splits.length - 1];
-        String rootURL = url.contains("www.youtube.com/channel") ? RSS_URL_CHANNEL : RSS_URL_USER;
+
+        String rootURL = null;
+        if(url.contains("channel"))
+            rootURL = RSS_URL_CHANNEL;
+        else if(url.contains("user"))
+            rootURL = RSS_URL_USER;
+        else if(url.contains("playlist")) {
+            feedID = feedID.replace("playlist?list=", "");
+            rootURL = RSS_URL_PLAYLIST;
+        }
+
+        Log.i(TAG, "FeedID : "+feedID);
+        if (rootURL == null) {
+            Log.e(TAG, "This kind of url is not supported : "+url);
+            Toast.makeText(this, R.string.error_no_yt_link, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         final String feedURL = rootURL + feedID;
         InputStream inputStream = null;
         try {
