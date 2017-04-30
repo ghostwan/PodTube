@@ -10,6 +10,12 @@ click on the share button and select PodTube you will be able to subscribe to th
 
 For example : https://www.youtube.com/user/CNN
 
+## What's new:
+- Manage playlist : you can now share a playlist from pushBullet or the share android button
+- You can retry / delete / play a download item
+
+## Screenshots
+
 ### Browse a feed 
 ![alt text](screenshots/add_feed.png "browse a feed list (user/channel/playlist)")
 ### Feed library
@@ -26,12 +32,6 @@ For example : https://www.youtube.com/user/CNN
 - Atom RSS parser : https://github.com/einmalfel/Earl
 - Json Parser : https://github.com/google/gson
 - File Downloader : https://github.com/lingochamp/FileDownloader
-
-## What's new:
-- Manage playlist : you can now share a playlist from pushBullet or the share android button
-- You can retry / delete / play a download item
- 
-
 
 ## TODO (next):
 
