@@ -1,4 +1,4 @@
-# PodTube
+ # PodTube ![alt text](screenshots/icon.png "")
 
 Because [youtube RED](https://www.youtube.com/red) is not available in most country, this app allows you to download a youtube video or subscribe to a youtube channel.
 
