@@ -47,7 +47,7 @@ Or you can directly from your phone share a video or a playlist to either downlo
 - Find a way to be podcast player compatible
 - Search for feed to add
 - Download automatically the last episode released 
-- Choose where to save the download 
+- Choose where to save the download items 
 - Delete a feed 
 - Have a cleaner UI
 - Improve code
