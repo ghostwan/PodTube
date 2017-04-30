@@ -10,6 +10,8 @@ click on the share button and select PodTube you will be able to subscribe to th
 
 For example : https://www.youtube.com/user/CNN
 
+Or you can directly from your phone share a video or a playlist to either download it or add the feed in your library.
+
 ## What's new in 
 ### 1.1.0:
 - Manage playlist : you can now share a playlist from pushBullet or the share android button
