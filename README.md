@@ -1,7 +1,5 @@
 # PodTube
 
-**This is a first draft. But it's working**
-
 This app allows you to download a youtube video or subscribe to a youtube channel.
 
 The main goal is to be able to subscribe to a channel or a user as we subscribe to podcast. 
@@ -11,6 +9,10 @@ If you share a youtube user / channel / playlist page with [pushbullet](https://
 click on the share button and select PodTube you will be able to subscribe to this feed
 
 For example : https://www.youtube.com/user/CNN
+
+![alt text](screenshots/add_feed.png "browse a feed list (user/channel/playlist)")
+![alt text](screenshots/feed_added.png "add a feed to your library")
+![alt text](screenshots/feed_added.png "add a feed to your library")
 
 ## Libraries:
 
