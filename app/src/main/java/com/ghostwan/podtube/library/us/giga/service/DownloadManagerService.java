@@ -40,8 +40,8 @@ public class DownloadManagerService extends Service
 	private static final int NOTIFICATION_ID = 1000;
 	private static final String EXTRA_NAME = "DownloadManagerService.extra.name";
 	private static final String EXTRA_LOCATION = "DownloadManagerService.extra.location";
-	private static final String EXTRA_IS_AUDIO = "DownloadManagerService.extra.is_audio";
 	private static final String EXTRA_THREADS = "DownloadManagerService.extra.threads";
+	private static final String EXTRA_TYPE = "DownloadManagerService.extra.type";
 
 
 	private DMBinder mBinder;
@@ -133,11 +133,11 @@ public class DownloadManagerService extends Service
 	}
 
 	private void startMissionAsync(final String url, final String location, final String name,
-								   final boolean isAudio, final int threads) {
+								   final String type, final int threads) {
 		mHandler.post(new Runnable() {
 			@Override
 			public void run() {
-				int missionId = mManager.startMission(url, location, name, isAudio, threads);
+				int missionId = mManager.startMission(url, location, name, type, threads);
 				mBinder.onMissionAdded(mManager.getMission(missionId));
 			}
 		});
@@ -154,9 +154,9 @@ public class DownloadManagerService extends Service
 			String name = intent.getStringExtra(EXTRA_NAME);
 			String location = intent.getStringExtra(EXTRA_LOCATION);
 			int threads = intent.getIntExtra(EXTRA_THREADS, 1);
-			boolean isAudio = intent.getBooleanExtra(EXTRA_IS_AUDIO, false);
+			String type= intent.getStringExtra(EXTRA_TYPE);
 			String url = intent.getDataString();
-			startMissionAsync(url, location, name, isAudio, threads);
+			startMissionAsync(url, location, name, type, threads);
 		}
 		return START_NOT_STICKY;
 	}
@@ -206,13 +206,19 @@ public class DownloadManagerService extends Service
 		}
 	}
 
-	public static void startMission(Context context, String url, String location, String name, boolean isAudio, int threads) {
+	public static void startMission(Context context, String url, String location, String name, String type, int threads) {
+		Log.i(TAG, "Start mission : \n"
+				+"URL :"+url + "\n"
+				+"PATH: "+ location + "\n"
+				+"NAME: "+ name+ "\n"
+				+"TYPE: "+ type+ "\n"
+				+"THREADS: "+ threads+ "\n");
 		Intent intent = new Intent(context, DownloadManagerService.class);
 		intent.setAction(Intent.ACTION_RUN);
 		intent.setData(Uri.parse(url));
 		intent.putExtra(EXTRA_NAME, name);
 		intent.putExtra(EXTRA_LOCATION, location);
-		intent.putExtra(EXTRA_IS_AUDIO, isAudio);
+		intent.putExtra(EXTRA_TYPE, type);
 		intent.putExtra(EXTRA_THREADS, threads);
 		context.startService(intent);
 	}

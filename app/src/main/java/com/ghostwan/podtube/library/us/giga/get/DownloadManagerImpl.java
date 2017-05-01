@@ -32,7 +32,7 @@ public class DownloadManagerImpl implements DownloadManager {
     }
 
     @Override
-    public int startMission(String url, String location, String name, boolean isAudio, int threads) {
+    public int startMission(String url, String location, String name, String type, int threads) {
         DownloadMission existingMission = getMissionByLocation(location, name);
         if (existingMission != null) {
             // Already downloaded or downloading
@@ -51,7 +51,7 @@ public class DownloadManagerImpl implements DownloadManager {
             }
         }
 
-        DownloadMission mission = new DownloadMission(name, url, location, isAudio ? "audio" : "video");
+        DownloadMission mission = new DownloadMission(name, url, location, type);
         mission.timestamp = System.currentTimeMillis();
         mission.threadCount = threads;
         mission.addListener(new MissionListener(mission));

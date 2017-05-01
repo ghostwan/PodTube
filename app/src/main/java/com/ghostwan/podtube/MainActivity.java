@@ -9,12 +9,15 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.*;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
+import com.ghostwan.podtube.settings.PrefManager;
+import com.ghostwan.podtube.settings.SettingsActivity;
 
 import java.util.List;
 
@@ -44,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        prefManager = new PrefManager(this);
         listView = (ListView) findViewById(R.id.listView);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -54,7 +56,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(activityIntent);
             }
         });
-//        fab.setVisibility(View.GONE);
+        fab.setVisibility(View.GONE);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         // Bind the service
         Intent intent = new Intent(this, DownloadManagerService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
@@ -76,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
@@ -85,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        feeds = prefManager.loadFeedInfo();
+        feeds = PrefManager.loadFeedInfo(this);
         FeedAdapter feedAdapter = new FeedAdapter(this, feeds);
         listView.setAdapter(feedAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -120,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        prefManager.saveFeedInfo(feeds);
+        PrefManager.saveFeedInfo(this, feeds);
     }
 
     @Override

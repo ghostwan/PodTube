@@ -9,10 +9,10 @@ public interface DownloadManager
 	 * @param url the url to download
 	 * @param location the location
 	 * @param name the name of the file to create
-	 * @param isAudio true if the download is an audio file
+	 * @param type type of file
 	 * @param threads the number of threads maximal used to download chunks of the file.    @return the identifier of the mission.
      */
-	int startMission(String url, String location, String name, boolean isAudio, int threads);
+	int startMission(String url, String location, String name, String type, int threads);
 
 	/**
 	 * Resume the execution of a download mission.

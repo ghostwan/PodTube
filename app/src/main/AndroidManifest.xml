@@ -48,10 +48,21 @@
 				<data android:mimeType="text/plain"/>
 			</intent-filter>
 		</activity>
-		<activity android:name=".DownloadingActivity"
+		<activity
+				android:name=".DownloadingActivity"
 				android:label="@string/title_activity_downloading">
 		</activity>
+
 		<service android:name=".library.us.giga.service.DownloadManagerService"/>
+
+		<activity
+				android:name=".settings.SettingsActivity"
+				android:label="@string/title_activity_settings"
+				android:parentActivityName=".MainActivity">
+			<meta-data
+					android:name="android.support.PARENT_ACTIVITY"
+					android:value="com.ghostwan.podtube.MainActivity"/>
+		</activity>
 	</application>
 
 </manifest>

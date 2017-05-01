@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<EditTextPreference android:title="@string/title_threads"
+	                    android:key="preference_threads"
+	                    android:inputType="number"
+	                    android:numeric="decimal"
+	                    android:summary="@string/summary_threads">
+	</EditTextPreference>
+
+	<EditTextPreference android:title="@string/title_audio_download_folder"
+	                    android:key="preference_download_audio_folder"
+	                    android:inputType="textUri"
+	                    android:summary="@string/summary_audio_download_folder">
+	</EditTextPreference>
+
+	<EditTextPreference android:title="@string/title_video_download_folder"
+	                    android:key="preference_download_video_folder"
+	                    android:inputType="textUri"
+	                    android:summary="@string/summary_video_download_folder">
+	</EditTextPreference>
+
+</PreferenceScreen>

@@ -73,8 +73,13 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         holder.titleView.setText(holder.mission.name);
         holder.itemView.setTag(holder.mission.url);
 
-        if (holder.mission.type.equals("video")) {
+        if (holder.mission.type.equals(Util.VIDEO_TYPE)) {
             int color = Color.parseColor("#377be8"); //The color u want
+            holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        else {
+            int color = Color.parseColor("#FF4081"); //The color u want
             holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
             holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
@@ -115,14 +120,10 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 switch (holder.getResource()) {
                     case R.drawable.ic_start:
                     case R.drawable.ic_resume:
-                        holder.setImage(R.drawable.ic_pause);
-                        mDownloadManager.resumeMission(holder.mission);
-                        mBinder.onMissionAdded(holder.mission);
+                        resume(holder);
                         break;
                     case R.drawable.ic_pause:
-                        holder.setImage(R.drawable.ic_resume);
-                        mDownloadManager.pauseMission(holder.mission);
-                        mBinder.onMissionRemoved(holder.mission);
+                        pause(holder);
                         break;
                     case R.drawable.ic_play:
                         play(holder.mission);
@@ -137,11 +138,14 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         holder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                if(!holder.mission.finished)
+                    pause(holder);
                 showOptionDialog(holder.mission);
                 return true;
             }
         });
     }
+
 
     private void updateProgress(CViewHolder holder) {
         updateProgress(holder, false);
@@ -183,6 +187,18 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             h.lastTimeStamp = now;
             h.lastDone = h.mission.done;
         }
+    }
+
+    private void pause(CViewHolder holder) {
+        holder.setImage(R.drawable.ic_resume);
+        mDownloadManager.pauseMission(holder.mission);
+        mBinder.onMissionRemoved(holder.mission);
+    }
+
+    private void resume(CViewHolder holder) {
+        holder.setImage(R.drawable.ic_pause);
+        mDownloadManager.resumeMission(holder.mission);
+        mBinder.onMissionAdded(holder.mission);
     }
 
     private void play(DownloadMission mission) {
@@ -277,33 +293,6 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         builder.show();
     }
 
-
-    private void responseUIListener(@NonNull final DownloadMission mission, final CViewHolder holder) {
-
-
-        mission.addListener(new DownloadMission.MissionListener() {
-            @Override
-            public void onProgressUpdate(DownloadMission downloadMission, long done, long total) {
-                if (holder.itemView.getTag().equals(downloadMission.url)) {
-                    holder.downloadButton.setImageResource(R.drawable.ic_pause);
-                    holder.progressBar.setProgress(Integer.parseInt(getPercent(done,total)));
-                    holder.progressView.setText(getPercent(done, total));
-                }
-            }
-
-            @Override
-            public void onFinish(DownloadMission downloadMission) {
-                if (holder.itemView.getTag().equals(downloadMission.url)) {
-                    holder.setImage(R.drawable.ic_play);
-                }
-            }
-
-            @Override
-            public void onError(DownloadMission downloadMission, int errCode) {
-
-            }
-        });
-    }
 
     private String getPercent(long completed, long total) {
 

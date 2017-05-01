@@ -16,6 +16,7 @@ import android.widget.*;
 import com.einmalfel.earl.EarlParser;
 import com.einmalfel.earl.Feed;
 import com.einmalfel.earl.Item;
+import com.ghostwan.podtube.settings.PrefManager;
 import org.xmlpull.v1.XmlPullParserException;
 import teaspoon.annotations.OnBackground;
 
@@ -36,7 +37,6 @@ public class FeedActivity extends AppCompatActivity {
     private List<FeedInfo> feeds;
     private FloatingActionButton fab;
     private FeedInfo currentInfo;
-    private PrefManager prefManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +45,6 @@ public class FeedActivity extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.listView);
         ctx = this;
-        prefManager = new PrefManager(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -75,7 +74,7 @@ public class FeedActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        feeds = prefManager.loadFeedInfo();
+        feeds = PrefManager.loadFeedInfo(this);
     }
 
     @OnBackground
@@ -176,6 +175,6 @@ public class FeedActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        prefManager.saveFeedInfo(feeds);
+        PrefManager.saveFeedInfo(this, feeds);
     }
 }

@@ -37,4 +37,14 @@
 	<string name="download_finished">Download Finished!</string>
 	<string name="msg_running">PodTube downloading</string>
 	<string name="msg_running_detail">Tap for details</string>
+	<string name="title_activity_settings">Settings</string>
+
+	<string name="summary_threads">Number of thread per download</string>
+	<string name="title_threads">Threads</string>
+
+	<string name="title_audio_download_folder">Audio Folder</string>
+	<string name="summary_audio_download_folder">Folder where to download the audio files</string>
+
+	<string name="title_video_download_folder">Video Folder</string>
+	<string name="summary_video_download_folder">Folder where to download the video files</string>
 </resources>
