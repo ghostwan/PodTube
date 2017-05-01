@@ -21,15 +21,13 @@ import android.webkit.MimeTypeMap;
 import android.widget.*;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import com.ghostwan.podtube.library.dmanager.download.DownloadManager;
-import com.ghostwan.podtube.library.dmanager.download.DownloadTask;
-import com.ghostwan.podtube.library.dmanager.download.DownloadTaskListener;
-import com.ghostwan.podtube.library.dmanager.download.TaskEntity;
+import com.ghostwan.podtube.library.us.giga.get.DownloadManager;
+import com.ghostwan.podtube.library.us.giga.get.DownloadMission;
+import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
+import com.ghostwan.podtube.library.us.giga.util.Utility;
 
 
-import java.io.File;
-
-import static com.ghostwan.podtube.library.dmanager.download.TaskStatus.*;
+import static com.ghostwan.podtube.TaskStatus.*;
 
 /**
  * Created by erwan on 08/04/2017.
@@ -39,13 +37,14 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
 
     private static final String TAG = "DownloadItemAdapter";
+    private final DownloadManager mDownloadManager;
     private Context mContext;
+    private DownloadManagerService.DMBinder mBinder;
 
-    private DownloadManager mDownloadManager;
-
-    DownloadItemAdapter(Context context) {
+    DownloadItemAdapter(Context context, DownloadManagerService.DMBinder binder) {
         mContext = context;
-        mDownloadManager = DownloadManager.getInstance();
+        mBinder = binder;
+        mDownloadManager = mBinder.getDownloadManager();
     }
 
     @Override
@@ -55,118 +54,82 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     }
 
     @Override
+    public void onViewRecycled(CViewHolder h) {
+        super.onViewRecycled(h);
+        h.mission.removeListener(h.observer);
+        h.mission = null;
+        h.observer = null;
+        h.position = -1;
+        h.lastTimeStamp = -1;
+        h.lastDone = -1;
+        h.colorId = 0;
+    }
+
+    @Override
     public void onBindViewHolder(final CViewHolder holder, final int position) {
 
-        final TaskEntity taskEntity = mDownloadManager.getTaskEntities().get(holder.getAdapterPosition());
-        holder.titleView.setText(taskEntity.getTitle());
-        holder.itemView.setTag(taskEntity.getUrl());
+        DownloadMission mission = mDownloadManager.getMission(position);
+        holder.initMission(mContext, this, mission);
+        holder.titleView.setText(holder.mission.name);
+        holder.itemView.setTag(holder.mission.url);
 
-//        holder.progressBar.setProgressTintList();
-        if (taskEntity.getType().equals("video")) {
+        if (holder.mission.type.equals("video")) {
             int color = Color.parseColor("#377be8"); //The color u want
             holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
             holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
 
-        if (mDownloadManager.isFileError(taskEntity.getTaskId())) {
-            taskEntity.setTaskStatus(TASK_STATUS_STORAGE_ERROR);
-        }
-
-        int status = taskEntity.getTaskStatus();
-        DownloadTask itemTask = mDownloadManager.getTask(taskEntity.getTaskId());
-        responseUIListener(itemTask, holder);
-        String progress = getPercent(taskEntity.getCompletedSize(), taskEntity.getTotalSize());
-
+        int status = holder.mission.getStatus();
 
         switch (status) {
             case TASK_STATUS_INIT:
-                boolean isPause = mDownloadManager.isPauseTask(taskEntity.getTaskId());
-                boolean isFinish = mDownloadManager.isFinishTask(taskEntity.getTaskId());
-                holder.downloadButton.setImageResource(isFinish ? R.drawable.ic_play : !isPause ? R.drawable.ic_start : R.drawable.ic_resume);
-                holder.progressBar.setProgress(Integer.parseInt(progress));
-                holder.progressView.setText(progress);
+                holder.setImage(R.drawable.ic_start);
                 break;
             case TASK_STATUS_QUEUE:
-                holder.downloadButton.setImageResource(R.drawable.ic_queue);
-                holder.progressBar.setProgress(Integer.parseInt(progress));
-                holder.progressView.setText(progress);
+                holder.setImage(R.drawable.ic_queue);
                 break;
             case TASK_STATUS_CONNECTING:
-                holder.downloadButton.setImageResource(R.drawable.ic_connecting);
-                holder.progressBar.setProgress(Integer.parseInt(progress));
-                holder.progressView.setText(progress);
+                holder.setImage(R.drawable.ic_connecting);
                 break;
             case TASK_STATUS_DOWNLOADING:
-                holder.downloadButton.setImageResource(R.drawable.ic_pause);
-                holder.progressBar.setProgress(Integer.parseInt(progress));
-                holder.progressView.setText(progress);
+                holder.setImage(R.drawable.ic_pause);
                 break;
             case TASK_STATUS_PAUSE:
-                holder.downloadButton.setImageResource(R.drawable.ic_resume);
-                holder.progressBar.setProgress(Integer.parseInt(progress));
-                holder.progressView.setText(progress);
+                holder.setImage(R.drawable.ic_resume);
                 break;
             case TASK_STATUS_FINISH:
-                holder.downloadButton.setImageResource(R.drawable.ic_play);
-                holder.progressBar.setProgress(Integer.parseInt(progress));
-                holder.progressView.setText(progress);
+                holder.setImage(R.drawable.ic_play);
                 break;
             case TASK_STATUS_REQUEST_ERROR:
-                holder.downloadButton.setImageResource(R.drawable.ic_error);
-                holder.progressBar.setProgress(Integer.parseInt(progress));
-                holder.progressView.setText(progress);
             case TASK_STATUS_STORAGE_ERROR:
-                holder.downloadButton.setImageResource(R.drawable.ic_error);
-                holder.progressBar.setProgress(Integer.parseInt(progress));
-                holder.progressView.setText(progress);
+                holder.setImage(R.drawable.ic_error);
                 break;
         }
+
+        updateProgress(holder);
 
 
         holder.downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String url = taskEntity.getUrl();
-                String taskId = String.valueOf(url.hashCode());
-                DownloadTask itemTask = mDownloadManager.getTask(taskId);
-
-                if (itemTask == null) {
-                    itemTask = new DownloadTask(new TaskEntity.Builder().url(taskEntity.getUrl()).build());
-                    responseUIListener(itemTask, holder);
-                    mDownloadManager.addTask(itemTask);
-                } else {
-                    responseUIListener(itemTask, holder);
-                    TaskEntity taskEntity = itemTask.getTaskEntity();
-                    int status = taskEntity.getTaskStatus();
-                    switch (status) {
-                        case TASK_STATUS_QUEUE:
-                            mDownloadManager.pauseTask(itemTask);
-                            break;
-                        case TASK_STATUS_INIT:
-                            mDownloadManager.addTask(itemTask);
-                            break;
-                        case TASK_STATUS_CONNECTING:
-                            mDownloadManager.pauseTask(itemTask);
-                            break;
-                        case TASK_STATUS_DOWNLOADING:
-                            mDownloadManager.pauseTask(itemTask);
-                            break;
-                        case TASK_STATUS_CANCEL:
-                            mDownloadManager.addTask(itemTask);
-                            break;
-                        case TASK_STATUS_PAUSE:
-                            mDownloadManager.resumeTask(itemTask);
-                            break;
-                        case TASK_STATUS_FINISH:
-                            play(itemTask);
-                            break;
-                        case TASK_STATUS_REQUEST_ERROR:
-                            showErrorDialog(itemTask);
-                            break;
-                        case TASK_STATUS_STORAGE_ERROR:
-                            showErrorDialog(itemTask);
-                            break;
-                    }
+                switch (holder.getResource()) {
+                    case R.drawable.ic_start:
+                    case R.drawable.ic_resume:
+                        holder.setImage(R.drawable.ic_pause);
+                        mDownloadManager.resumeMission(holder.mission);
+                        mBinder.onMissionAdded(holder.mission);
+                        break;
+                    case R.drawable.ic_pause:
+                        holder.setImage(R.drawable.ic_resume);
+                        mDownloadManager.pauseMission(holder.mission);
+                        mBinder.onMissionRemoved(holder.mission);
+                        break;
+                    case R.drawable.ic_play:
+                        play(holder.mission);
+                        break;
+                    case R.drawable.ic_error:
+                        showErrorDialog(holder.mission);
+                        break;
                 }
             }
         });
@@ -174,22 +137,59 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         holder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                String url = taskEntity.getUrl();
-                String taskId = String.valueOf(url.hashCode());
-                DownloadTask itemTask = mDownloadManager.getTask(taskId);
-                showOptionDialog(itemTask);
+                showOptionDialog(holder.mission);
                 return true;
             }
         });
     }
 
-    private void play(DownloadTask itemTask) {
-        TaskEntity entity = itemTask.getTaskEntity();
+    private void updateProgress(CViewHolder holder) {
+        updateProgress(holder, false);
+    }
+
+    private void updateProgress(CViewHolder h, boolean finished) {
+        if (h.mission == null) return;
+
+        long now = System.currentTimeMillis();
+
+        if (h.lastTimeStamp == -1) {
+            h.lastTimeStamp = now;
+        }
+
+        if (h.lastDone == -1) {
+            h.lastDone = h.mission.done;
+        }
+
+        long deltaTime = now - h.lastTimeStamp;
+        long deltaDone = h.mission.done - h.lastDone;
+
+        if (deltaTime == 0 || deltaTime > 1000 || finished) {
+            if (h.mission.errCode > 0) {
+                h.progressView.setText("ERR");
+            } else {
+                String percent = getPercent(h.mission.done, h.mission.length);
+                h.progressBar.setProgress(Integer.parseInt(percent));
+                h.progressView.setText(percent);
+            }
+        }
+
+        if (deltaTime > 1000 && deltaDone > 0) {
+            float speed = (float) deltaDone / deltaTime;
+            String speedStr = Utility.formatSpeed(speed * 1000);
+            String sizeStr = Utility.formatBytes(h.mission.length);
+
+//            h.size.setText(sizeStr + " " + speedStr);
+
+            h.lastTimeStamp = now;
+            h.lastDone = h.mission.done;
+        }
+    }
+
+    private void play(DownloadMission mission) {
         Intent intent = new Intent();
         intent.setAction(android.content.Intent.ACTION_VIEW);
-        Log.i(TAG, "Opening : " + entity.getFilePath() + "/" + entity.getFileName());
-        File file = new File(entity.getFilePath(), entity.getFileName());
-        Uri uri = Uri.fromFile(file);
+        Log.i(TAG, "Opening : " + mission.getDownloadedFile().getPath());
+        Uri uri = Uri.fromFile(mission.getDownloadedFile());
         String mimetype = getMimeType(uri);
         if (mimetype == null) {
             mimetype = "audio/*";
@@ -212,18 +212,23 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         return mimeType;
     }
 
-    private void delete(DownloadTask itemTask) {
-        mDownloadManager.cancelTask(itemTask);
+    private void delete(DownloadMission mission) {
+        if(mission.running)
+            Toast.makeText(mContext, R.string.delete_error, Toast.LENGTH_SHORT).show();
+        else {
+            mDownloadManager.deleteMission(mission);
+            notifyDataSetChanged();
+        }
+    }
+
+    private void retry(DownloadMission mission) {
+        delete(mission);
+        mission.fallback = false;
         notifyDataSetChanged();
     }
 
-    private void retry(DownloadTask itemTask) {
-        mDownloadManager.resetTask(itemTask);
-        notifyDataSetChanged();
-    }
 
-
-    private void showOptionDialog(final DownloadTask itemTask) {
+    private void showOptionDialog(final DownloadMission itemTask) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.action_title);
         final CharSequence[] optionDialogActions = {
@@ -248,7 +253,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     }
 
 
-    private void showErrorDialog(final DownloadTask itemTask) {
+    private void showErrorDialog(final DownloadMission itemTask) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.action_title);
         final CharSequence[] optionDialogActions = {
@@ -273,77 +278,31 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     }
 
 
-    private void responseUIListener(@NonNull final DownloadTask itemTask, final CViewHolder holder) {
+    private void responseUIListener(@NonNull final DownloadMission mission, final CViewHolder holder) {
 
-        final TaskEntity taskEntity = itemTask.getTaskEntity();
 
-        itemTask.addListener("ui", new DownloadTaskListener() {
-
+        mission.addListener(new DownloadMission.MissionListener() {
             @Override
-            public void onQueue(DownloadTask downloadTask) {
-                if (holder.itemView.getTag().equals(taskEntity.getUrl())) {
-                    holder.downloadButton.setImageResource(R.drawable.ic_queue);
-                }
-            }
-
-            @Override
-            public void onConnecting(DownloadTask downloadTask) {
-                if (holder.itemView.getTag().equals(taskEntity.getUrl())) {
-                    holder.downloadButton.setImageResource(R.drawable.ic_connecting);
-                }
-            }
-
-            @Override
-            public void onStart(DownloadTask downloadTask) {
-                if (holder.itemView.getTag().equals(taskEntity.getUrl())) {
+            public void onProgressUpdate(DownloadMission downloadMission, long done, long total) {
+                if (holder.itemView.getTag().equals(downloadMission.url)) {
                     holder.downloadButton.setImageResource(R.drawable.ic_pause);
-                    holder.progressBar.setProgress(Integer.parseInt(getPercent(taskEntity.getCompletedSize(), taskEntity.getTotalSize())));
-                    holder.progressView.setText(getPercent(taskEntity.getCompletedSize(), taskEntity.getTotalSize()));
+                    holder.progressBar.setProgress(Integer.parseInt(getPercent(done,total)));
+                    holder.progressView.setText(getPercent(done, total));
                 }
             }
 
             @Override
-            public void onPause(DownloadTask downloadTask) {
-                if (holder.itemView.getTag().equals(taskEntity.getUrl())) {
-                    holder.downloadButton.setImageResource(R.drawable.ic_resume);
+            public void onFinish(DownloadMission downloadMission) {
+                if (holder.itemView.getTag().equals(downloadMission.url)) {
+                    holder.setImage(R.drawable.ic_play);
                 }
             }
 
             @Override
-            public void onCancel(DownloadTask downloadTask) {
-                if (holder.itemView.getTag().equals(taskEntity.getUrl())) {
-                    holder.downloadButton.setImageResource(R.drawable.ic_start);
-                    holder.progressView.setText("0");
-                    holder.progressBar.setProgress(0);
-                }
-            }
+            public void onError(DownloadMission downloadMission, int errCode) {
 
-            @Override
-            public void onFinish(DownloadTask downloadTask) {
-                if (holder.itemView.getTag().equals(taskEntity.getUrl())) {
-                    holder.downloadButton.setImageResource(R.drawable.ic_play);
-                }
-            }
-
-            @Override
-            public void onError(DownloadTask downloadTask, int codeError) {
-                if (holder.itemView.getTag().equals(taskEntity.getUrl())) {
-
-                    holder.downloadButton.setImageResource(R.drawable.ic_error);
-                    switch (codeError) {
-                        case TASK_STATUS_REQUEST_ERROR:
-                            Toast.makeText(mContext, R.string.request_error, Toast.LENGTH_SHORT).show();
-                            break;
-                        case TASK_STATUS_STORAGE_ERROR:
-                            Toast.makeText(mContext, R.string.storage_error, Toast.LENGTH_SHORT).show();
-                            break;
-
-                    }
-
-                }
             }
         });
-
     }
 
     private String getPercent(long completed, long total) {
@@ -358,7 +317,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
     @Override
     public int getItemCount() {
-        return mDownloadManager.getTaskEntities().size();
+        return mDownloadManager.getCount();
     }
 
     class CViewHolder extends RecyclerView.ViewHolder {
@@ -378,12 +337,74 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         @BindView(R.id.card_view)
         CardView cardView;
 
+        int resource;
+        public MissionObserver observer;
+        public DownloadMission mission;
+        public int position;
+        public long lastTimeStamp = -1;
+        public long lastDone = -1;
+        public int colorId;
+
         CViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
 
+        public void setImage(int res) {
+            resource = res;
+            downloadButton.setImageResource(res);
+        }
+
+        public void initMission(Context ctx, DownloadItemAdapter adapter, DownloadMission downloadMission) {
+            mission = downloadMission;
+            observer = new MissionObserver(adapter, this, ctx);
+            mission.addListener(observer);
+        }
+
+        public int getResource() {
+            return resource;
+        }
     }
+
+
+    static class MissionObserver implements DownloadMission.MissionListener {
+        private final Context mContext;
+        private DownloadItemAdapter mAdapter;
+        private CViewHolder mHolder;
+
+        public MissionObserver(DownloadItemAdapter adapter, CViewHolder holder, Context context) {
+            mAdapter = adapter;
+            mHolder = holder;
+            mContext = context;
+        }
+
+        @Override
+        public void onProgressUpdate(DownloadMission downloadMission, long done, long total) {
+            mAdapter.updateProgress(mHolder);
+        }
+
+        @Override
+        public void onFinish(DownloadMission downloadMission) {
+            // TODO Notification
+            mAdapter.notifyDataSetChanged();
+            if (mHolder.mission != null) {
+//                mHolder.size.setText(Utility.formatBytes(mHolder.mission.length));
+                mAdapter.updateProgress(mHolder, true);
+            }
+        }
+
+        @Override
+        public void onError(DownloadMission downloadMission, int errCode) {
+            mAdapter.updateProgress(mHolder);
+            if (mHolder.itemView.getTag().equals(downloadMission.url)) {
+                mHolder.setImage(R.drawable.ic_error);
+                Toast.makeText(mContext, R.string.request_error, Toast.LENGTH_SHORT).show();
+            }
+        }
+
+    }
+
+
 
 
 }

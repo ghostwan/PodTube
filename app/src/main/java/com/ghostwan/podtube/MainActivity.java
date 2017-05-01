@@ -1,19 +1,20 @@
 package com.ghostwan.podtube;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
-import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.*;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import com.ghostwan.podtube.library.dmanager.download.DownloadManager;
+import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
 
 import java.util.List;
 
@@ -25,6 +26,20 @@ public class MainActivity extends AppCompatActivity {
     private ListView listView;
     private FloatingActionButton fab;
 
+    private DownloadManagerService.DMBinder mBinder;
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder binder) {
+            mBinder = (DownloadManagerService.DMBinder) binder;
+            displayDownloadList();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            // What to do?
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +54,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(activityIntent);
             }
         });
-        fab.setVisibility(View.GONE);
+//        fab.setVisibility(View.GONE);
+        // Bind the service
+        Intent intent = new Intent(this, DownloadManagerService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -84,11 +102,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(DownloadManager.getInstance().isTasks())
-            fab.setVisibility(View.VISIBLE);
-        else
-            fab.setVisibility(View.GONE);
+        if(mBinder != null) {
+            displayDownloadList();
+        }
     }
+
+    private void displayDownloadList(){
+        if( mBinder.getDownloadManager().getCount() > 0) {
+            fab.setVisibility(View.VISIBLE);
+        }
+        else {
+            fab.setVisibility(View.GONE);
+        }
+    }
+
 
     @Override
     protected void onStop() {
@@ -96,6 +123,11 @@ public class MainActivity extends AppCompatActivity {
         prefManager.saveFeedInfo(feeds);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mConnection);
+    }
 
     private class FeedAdapter extends ArrayAdapter<FeedInfo> {
 

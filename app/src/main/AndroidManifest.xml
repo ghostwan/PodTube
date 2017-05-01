@@ -51,6 +51,7 @@
 		<activity android:name=".DownloadingActivity"
 				android:label="@string/title_activity_downloading">
 		</activity>
+		<service android:name=".library.us.giga.service.DownloadManagerService"/>
 	</application>
 
 </manifest>

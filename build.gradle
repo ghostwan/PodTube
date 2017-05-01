@@ -10,9 +10,6 @@ buildscript {
         //Thread management
         classpath 'me.minkyu.teaspoon:teaspoon-plugin:0.3.4'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
-        classpath 'org.greenrobot:greendao-gradle-plugin:3.2.1'
-
-
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }

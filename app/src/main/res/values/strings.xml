@@ -27,6 +27,7 @@
 	<string name="connecting">Connecting…</string>
 	<string name="queue">Queue</string>
 	<string name="request_error">Request error</string>
+	<string name="delete_error">You need to pause the job before deleting!</string>
 	<string name="storage_error">Not enough space</string>
 	<string name="action_title">Choose an action</string>
 	<string name="action_podtube_directory">Goto PodTube directory</string>
@@ -34,4 +35,6 @@
 	<string name="queue_download">Queue Download</string>
 	<string name="error_download">Download Error</string>
 	<string name="download_finished">Download Finished!</string>
+	<string name="msg_running">PodTube downloading</string>
+	<string name="msg_running_detail">Tap for details</string>
 </resources>

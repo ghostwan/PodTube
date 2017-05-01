@@ -38,7 +38,7 @@ Or you can directly from your phone share a video or a playlist to either downlo
 - Annotation-triggered method call by specified thread : https://github.com/KoMinkyu/teaspoon
 - Atom RSS parser : https://github.com/einmalfel/Earl
 - Json Parser : https://github.com/google/gson
-- File Downloader : https://github.com/lingochamp/FileDownloader
+- Gigaget Downloader : https://github.com/PaperAirplane-Dev-Team/GigaGet
 
 ## TODO (next):
 

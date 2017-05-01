@@ -20,9 +20,7 @@ import android.widget.*;
 import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YtFile;
-import com.ghostwan.podtube.library.dmanager.download.DownloadManager;
-import com.ghostwan.podtube.library.dmanager.download.DownloadTask;
-import com.ghostwan.podtube.library.dmanager.download.TaskEntity;
+import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -39,7 +37,6 @@ public class DownloadActivity extends Activity{
     private LinearLayout mainLayout;
     private ProgressBar mainProgressBar;
     private List<YtFragmentedVideo> formatsToShowList;
-    private DownloadManager downloadManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +49,6 @@ public class DownloadActivity extends Activity{
         if (checkPermission()) {
             getYoutubeDownloadUrl();
         }
-        downloadManager = DownloadManager.getInstance();
-
     }
 
     @Override
@@ -177,16 +172,19 @@ public class DownloadActivity extends Activity{
         File folder = new File(Environment.getExternalStorageDirectory() + "/PodTube");
         if(!folder.exists())
             folder.mkdir();
+        DownloadManagerService.startMission(
+                DownloadActivity.this,
+                youtubeDlUrl, folder.getAbsolutePath(), fileName, type.equals("audio"), 5);
 //        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        final TaskEntity taskEntity = new TaskEntity.Builder()
-                .url(youtubeDlUrl)
-                .type(type)
-                .fileName(fileName)
-                .title(downloadTitle)
-                .filePath(folder.getAbsolutePath())
-                .build();
-        DownloadTask itemTask = new DownloadTask(taskEntity);
-        downloadManager.addTask(itemTask);
+//        final TaskEntity taskEntity = new TaskEntity.Builder()
+//                .url(youtubeDlUrl)
+//                .type(type)
+//                .fileName(fileName)
+//                .title(downloadTitle)
+//                .filePath(folder.getAbsolutePath())
+//                .build();
+//        DownloadTask itemTask = new DownloadTask(taskEntity);
+//        downloadManager.addTask(itemTask);
     }
 
     private class YtFragmentedVideo {
