@@ -14,6 +14,9 @@ For example : https://www.youtube.com/user/CNN
 Or you can directly from your phone share a video or a playlist to either download it or add the feed in your library.
 
 ## What's new in 
+### 1.2.0:
+- Change downloader library to improve download performance use a modify version of Gigaget
+- Add preference to change downloads path
 ### 1.1.0:
 - Manage playlist : you can now share a playlist from pushBullet or the share android button
 ### 1.0.0:
