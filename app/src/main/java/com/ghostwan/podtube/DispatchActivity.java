@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
+import com.ghostwan.podtube.download.DownloadActivity;
+import com.ghostwan.podtube.feed.FeedActivity;
 
 import java.util.ArrayList;
 import java.util.List;

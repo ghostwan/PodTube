@@ -14,6 +14,7 @@
         <a href="https://github.com/HaarigerHarald/android-youtubeExtractor/releases/latest">latest GitHub release</a></string>
 	<string name="title_activity_feed">FeedActivity</string>
 	<string name="feed_add_library">Feed %1$s add to the library</string>
+	<string name="feed_remove_library">Feed %1$s remove to the library</string>
 	<string name="start">Start</string>
 	<string name="pause">Pause</string>
 	<string name="wait">Wait</string>
@@ -47,4 +48,5 @@
 
 	<string name="title_video_download_folder">Video Folder</string>
 	<string name="summary_video_download_folder">Folder where to download the video files</string>
+	<string name="warning_library_empty">Library is empty! \n Click me to add a feed by sharing a playlist from your youtube app</string>
 </resources>

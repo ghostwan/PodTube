@@ -7,7 +7,7 @@
 		android:layout_height="match_parent"
 		app:layout_behavior="@string/appbar_scrolling_view_behavior"
 		tools:showIn="@layout/activity_feed"
-		tools:context="com.ghostwan.podtube.FeedActivity">
+		tools:context="com.ghostwan.podtube.feed.FeedActivity">
 
 	<ListView
 			android:id="@+id/listView"

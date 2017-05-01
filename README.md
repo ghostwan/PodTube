@@ -17,8 +17,9 @@ Or you can directly from your phone share a video or a playlist to either downlo
 ### 1.2.0:
 - Change downloader library to improve download performance use a modify version of Gigaget
 - Add preference to change downloads path
+- Delete a feed from the library
 ### 1.1.0:
-- Manage playlist : you can now share a playlist from pushBullet or the share android button
+- Manage playlist : you can now share a playlist from pushBullet or from the share button in the youtube android app
 ### 1.0.0:
 - New download manager
 - Display notifications when a download start / end
@@ -47,12 +48,10 @@ Or you can directly from your phone share a video or a playlist to either downlo
 
 - Manually parse feed xml to retrieve the feed / item cover and description
 - Find a way to easily subscribe to a feed/user without going through pushbullet.
-- Allow to choose in which directory do download (in a settings are at download time)
+- Allow to choose in which directory do download a file at download time
 - Find a way to be podcast player compatible
 - Search for feed to add
 - Download automatically the last episode released 
-- Choose where to save the download items 
-- Delete a feed 
 - Have a cleaner UI
 - Improve code
 

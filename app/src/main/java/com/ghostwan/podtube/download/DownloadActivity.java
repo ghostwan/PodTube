@@ -1,4 +1,4 @@
-package com.ghostwan.podtube;
+package com.ghostwan.podtube.download;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -19,6 +19,8 @@ import android.widget.*;
 import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YtFile;
+import com.ghostwan.podtube.R;
+import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
 import com.ghostwan.podtube.settings.PrefManager;
 

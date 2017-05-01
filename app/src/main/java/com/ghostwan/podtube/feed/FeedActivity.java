@@ -1,4 +1,4 @@
-package com.ghostwan.podtube;
+package com.ghostwan.podtube.feed;
 
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +16,9 @@ import android.widget.*;
 import com.einmalfel.earl.EarlParser;
 import com.einmalfel.earl.Feed;
 import com.einmalfel.earl.Item;
+import com.ghostwan.podtube.R;
+import com.ghostwan.podtube.Util;
+import com.ghostwan.podtube.download.DownloadActivity;
 import com.ghostwan.podtube.settings.PrefManager;
 import org.xmlpull.v1.XmlPullParserException;
 import teaspoon.annotations.OnBackground;
@@ -56,10 +59,16 @@ public class FeedActivity extends AppCompatActivity {
                 String feedName = "";
                 Snackbar snack = Snackbar.make(view, Util.getString(ctx, R.string.feed_add_library, feedName ), Snackbar.LENGTH_LONG);
                 snack.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+
+                    @Override
+                    public void onShown(Snackbar transientBottomBar) {
+                        super.onShown(transientBottomBar);
+                        feeds.add(currentInfo);
+                    }
+
                     @Override
                     public void onDismissed(Snackbar transientBottomBar, int event) {
                         super.onDismissed(transientBottomBar, event);
-                        feeds.add(currentInfo);
                         FeedActivity.this.finish();
                     }
                 });

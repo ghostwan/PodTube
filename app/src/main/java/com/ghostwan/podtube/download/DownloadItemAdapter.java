@@ -1,4 +1,4 @@
-package com.ghostwan.podtube;
+package com.ghostwan.podtube.download;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -20,13 +20,15 @@ import android.webkit.MimeTypeMap;
 import android.widget.*;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.ghostwan.podtube.R;
+import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.library.us.giga.get.DownloadManager;
 import com.ghostwan.podtube.library.us.giga.get.DownloadMission;
 import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
 import com.ghostwan.podtube.library.us.giga.util.Utility;
 
 
-import static com.ghostwan.podtube.TaskStatus.*;
+import static com.ghostwan.podtube.download.TaskStatus.*;
 
 /**
  * Created by erwan on 08/04/2017.

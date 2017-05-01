@@ -1,4 +1,4 @@
-package com.ghostwan.podtube;
+package com.ghostwan.podtube.download;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
 
 import java.io.File;

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import com.ghostwan.podtube.FeedInfo;
+import com.ghostwan.podtube.feed.FeedInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

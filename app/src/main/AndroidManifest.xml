@@ -25,13 +25,13 @@
 			</intent-filter>
 		</activity>
 		<activity
-				android:name=".DownloadActivity"
+				android:name=".download.DownloadActivity"
 				android:excludeFromRecents="true"
 				android:taskAffinity=""
 				android:theme="@style/PopUpTheme">
 		</activity>
 		<activity
-				android:name=".FeedActivity"
+				android:name=".feed.FeedActivity"
 				android:label="@string/title_activity_feed"
 				android:theme="@style/AppTheme.NoActionBar">
 		</activity>
@@ -49,7 +49,7 @@
 			</intent-filter>
 		</activity>
 		<activity
-				android:name=".DownloadingActivity"
+				android:name=".download.DownloadingActivity"
 				android:label="@string/title_activity_downloading">
 		</activity>
 

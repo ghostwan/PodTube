@@ -11,7 +11,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 
 import static com.ghostwan.podtube.BuildConfig.DEBUG;
-import static com.ghostwan.podtube.TaskStatus.*;
+import static com.ghostwan.podtube.download.TaskStatus.*;
 
 public class DownloadMission {
     private static final String TAG = DownloadMission.class.getSimpleName();

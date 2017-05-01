@@ -1,4 +1,4 @@
-package com.ghostwan.podtube;
+package com.ghostwan.podtube.feed;
 
 /**
  * Created by erwan on 28/03/2017.
