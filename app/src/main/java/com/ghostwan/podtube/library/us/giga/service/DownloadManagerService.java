@@ -178,19 +178,6 @@ public class DownloadManagerService extends Service
 	
 	@Override
 	public IBinder onBind(Intent intent) {
-		int permissionCheck;
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
-			permissionCheck = PermissionChecker.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-			if(permissionCheck == PermissionChecker.PERMISSION_DENIED) {
-				Toast.makeText(this, "Permission denied (read)", Toast.LENGTH_SHORT).show();
-			}
-		}
-
-		permissionCheck = PermissionChecker.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-		if(permissionCheck == PermissionChecker.PERMISSION_DENIED) {
-			Toast.makeText(this, "Permission denied (write)", Toast.LENGTH_SHORT).show();
-		}
-
 		return mBinder;
 	}
 
