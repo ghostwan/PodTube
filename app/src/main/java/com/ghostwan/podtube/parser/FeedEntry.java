@@ -17,7 +17,7 @@ public class FeedEntry {
     @Namespace(prefix="yt", reference="http://www.youtube.com/xml/schemas/2015")
     public String videoId;
 
-    @Element
+    @Element(required = false)
     @Namespace(prefix="yt", reference="http://www.youtube.com/xml/schemas/2015")
     public String channelId;
 

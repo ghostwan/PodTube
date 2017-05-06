@@ -13,9 +13,10 @@ import java.util.Date;
  */
 public class FeedParser {
 
-    public static Feed parse(URL url) throws Exception {
+    public static Feed parse(String url) throws Exception {
 
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        URL url1 = new URL(url);
+        HttpURLConnection urlConnection = (HttpURLConnection) url1.openConnection();
 
         RegistryMatcher registryMatcher = new RegistryMatcher();
         registryMatcher.bind(Date.class, new AtomDateFormatTransformer());

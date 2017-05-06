@@ -13,14 +13,18 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.*;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import com.bumptech.glide.Glide;
 import com.ghostwan.podtube.download.DownloadingActivity;
 import com.ghostwan.podtube.feed.FeedActivity;
 import com.ghostwan.podtube.feed.FeedInfo;
 import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
+import com.ghostwan.podtube.parser.Feed;
 import com.ghostwan.podtube.settings.PrefManager;
 import com.ghostwan.podtube.settings.SettingsActivity;
+import teaspoon.annotations.OnBackground;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -169,8 +173,10 @@ public class MainActivity extends AppCompatActivity {
             }
             // Lookup view for data population
             TextView tvName = (TextView) convertView.findViewById(R.id.name);
+            ImageView imageView= (ImageView) convertView.findViewById(R.id.list_icon);
             // Populate the data into the template view using the data object
             tvName.setText(feed != null ? feed.getName() : "None");
+            getFeedInfo(feed, imageView);
             // Return the completed view to render on screen
             convertView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
@@ -206,8 +212,29 @@ public class MainActivity extends AppCompatActivity {
             return convertView;
         }
 
+        @OnBackground
+        private void getFeedInfo(FeedInfo info, final ImageView imageView) {
+            Log.i(TAG, "Loading info for : "+info.getName());
+            try {
+                final Feed feed = Util.getFeedFromYoutubeUrl(info.getUrl());
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(feed.entries.get(0) != null)
+                            Glide.with(MainActivity.this)
+                                    .load(feed.entries.get(0).mediaMetadata.thumbnailUrl)
+                                    .placeholder(R.drawable.background)
+                                    .into(imageView);
+                    }
+                });
+            } catch (Exception e) {
+                Log.i(TAG, "error : ", e);
+            }
+        }
+
         private void removeFeed(final FeedInfo feed, View view) {
-            Snackbar snack = Snackbar.make(view, Util.getString(getContext(), R.string.feed_remove_library, feed.getName()), Snackbar.LENGTH_LONG);
+            Snackbar snack = Snackbar.make(view, Util.getString(getContext(), R.string.feed_remove_library, feed.getName()), Snackbar.LENGTH_SHORT);
             snack.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                 @Override
                 public void onShown(Snackbar transientBottomBar) {

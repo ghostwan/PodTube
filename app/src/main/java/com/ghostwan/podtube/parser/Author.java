@@ -10,18 +10,10 @@ import org.simpleframework.xml.Root;
 public class Author {
 
     @Element
-    private String name;
+    public String name;
 
     @Element
-    private String uri;
-
-    public String getName() {
-        return name;
-    }
-
-    public String getUri() {
-        return uri;
-    }
+    public String uri;
 
     @Override
     public String toString() {

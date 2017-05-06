@@ -18,10 +18,10 @@ public class Feed {
     @Attribute(name = "href")
     public String url;
 
-    @Element
+    @Element(required = false)
     public String playlistId;
 
-    @Element
+    @Element(required = false)
     public String channelId;
 
     @Element

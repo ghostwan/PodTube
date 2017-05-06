@@ -10,8 +10,8 @@
 	<string name="parsing_feed">Parsing feed…</string>
 	<string name="error_no_yt_link">Not a valid YouTube link!</string>
 	<string name="error_permission_denied">Permission denied application is quitting!</string>
-	<string name="app_update">Couldn\'t extract URLs you may need an update:
-        <a href="https://github.com/HaarigerHarald/android-youtubeExtractor/releases/latest">latest GitHub release</a></string>
+	<string name="app_update">Couldn\'t extract URLs you may need an update</string>
+	<string name="feed_error">"Url: %1$s is not supported!"</string>
 	<string name="title_activity_feed">FeedActivity</string>
 	<string name="feed_add_library">Feed %1$s add to the library</string>
 	<string name="feed_remove_library">Feed %1$s remove to the library</string>
@@ -31,6 +31,7 @@
 	<string name="delete_error">You need to pause the job before deleting!</string>
 	<string name="storage_error">Not enough space</string>
 	<string name="action_title">Choose an action</string>
+	<string name="description_title">Description</string>
 	<string name="action_podtube_directory">Goto PodTube directory</string>
 	<string name="start_download">Start Download</string>
 	<string name="queue_download">Queue Download</string>
