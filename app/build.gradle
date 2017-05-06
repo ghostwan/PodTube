@@ -32,9 +32,6 @@ dependencies {
     //Youtube downloader library
     compile 'com.github.HaarigerHarald:android-youtubeExtractor:master-SNAPSHOT'
 
-    // Earl it's a pure android RSS / ATOM parser
-    compile 'com.einmalfel:earl:1.2.0'
-
     //Json parser to store data
     compile 'com.google.code.gson:gson:2.8.0'
     // Inject view
@@ -46,13 +43,10 @@ dependencies {
 
     compile 'net.zetetic:android-database-sqlcipher:3.5.6@aar'
     compile 'com.nononsenseapps:filepicker:3.0.0'
+    compile 'org.simpleframework:simple-xml:2.7', {
+        exclude module: 'stax-api'
+    }
 
     // Unit test library
     testCompile 'junit:junit:4.12'
-    //ROME it's a java RSS / ATOM parser. Trt if better than earl
-//    compile ('com.github.rometools:rome:master-SNAPSHOT', {
-//        exclude group: 'junit', module: 'junit'
-//        exclude group: 'commons-logging', module: 'commons-logging'
-//        exclude group: 'org.apache.xmlrpc', module: 'xmlrpc-common'
-//    })
 }

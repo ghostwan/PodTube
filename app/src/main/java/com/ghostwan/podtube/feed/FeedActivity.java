@@ -13,21 +13,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
-import com.einmalfel.earl.EarlParser;
-import com.einmalfel.earl.Feed;
-import com.einmalfel.earl.Item;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.download.DownloadActivity;
+import com.ghostwan.podtube.parser.Feed;
+import com.ghostwan.podtube.parser.FeedEntry;
+import com.ghostwan.podtube.parser.FeedParser;
 import com.ghostwan.podtube.settings.PrefManager;
-import org.xmlpull.v1.XmlPullParserException;
 import teaspoon.annotations.OnBackground;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
-import java.util.zip.DataFormatException;
 
 public class FeedActivity extends AppCompatActivity {
 
@@ -111,35 +107,24 @@ public class FeedActivity extends AppCompatActivity {
         }
 
         final String feedURL = rootURL + feedID;
-        InputStream inputStream = null;
         try {
 
+            final Feed feed = FeedParser.parse(new URL(feedURL));
+            Log.i(TAG, "Processing feed: " + feed.title);
 
-            inputStream = new URL(feedURL).openConnection().getInputStream();
-
-            /*SyndFeedInput input = new SyndFeedInput();
-            SyndFeed feed2 = input.build(new XmlReader(inputStream));
-            List entries = feed2.getEntries();
-            for( int i = 0; i < entries.size(); i++ ){
-                Log.i(TAG, ""+((SyndEntry) entries.get(i)).getModule( MediaModule.URI ) );
-            }*/
-
-            final Feed feed = EarlParser.parseOrThrow(inputStream, 0);
-            Log.i(TAG, "Processing feed: " + feed.getTitle());
-
-            currentInfo = new FeedInfo(feed.getTitle(), url);
+            currentInfo = new FeedInfo(feed.title, url);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    setTitle(feed.getTitle());
-                    FeedItemAdapter feedItemAdapter = new FeedItemAdapter(FeedActivity.this, feed.getItems());
+                    setTitle(feed.title);
+                    FeedItemAdapter feedItemAdapter = new FeedItemAdapter(FeedActivity.this, feed.entries);
                     listView.setAdapter(feedItemAdapter);
                     listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> adapter, View v, int position, long arg3) {
-                            Item value = (Item) adapter.getItemAtPosition(position);
+                            FeedEntry value = (FeedEntry) adapter.getItemAtPosition(position);
                             Intent activityIntent = new Intent(FeedActivity.this, DownloadActivity.class);
-                            activityIntent.putExtra(Intent.EXTRA_TEXT, value.getLink());
+                            activityIntent.putExtra(Intent.EXTRA_TEXT, value.url);
                             startActivity(activityIntent);
                             finish();
                         }
@@ -150,24 +135,22 @@ public class FeedActivity extends AppCompatActivity {
             });
 
 
-        } catch (IOException | DataFormatException | XmlPullParserException e) {
+        }  catch (Exception e) {
             Log.i(TAG, "error : ", e);
-        } /*catch (FeedException e) {
-            Log.i(TAG, "error : ", e);
-        }*/
+        }
     }
 
 
-    private class FeedItemAdapter extends ArrayAdapter<Item> {
+    private class FeedItemAdapter extends ArrayAdapter<FeedEntry> {
 
-        public FeedItemAdapter(Context context, List<? extends Item> items) {
-            super(context, 0, (List<Item>) items);
+        public FeedItemAdapter(Context context, List<? extends FeedEntry> items) {
+            super(context, 0, (List<FeedEntry>) items);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             // Get the data item for this position
-            Item item = getItem(position);
+            FeedEntry item = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.item, parent, false);
@@ -175,7 +158,7 @@ public class FeedActivity extends AppCompatActivity {
             // Lookup view for data population
             TextView tvName = (TextView) convertView.findViewById(R.id.name);
             // Populate the data into the template view using the data object
-            tvName.setText(item.getTitle());
+            tvName.setText(item.title);
             // Return the completed view to render on screen
             return convertView;
         }
