@@ -34,6 +34,7 @@ public class FeedActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     private FeedInfo currentInfo;
     private View mainView;
+    private List<String> markedAsReadList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +80,7 @@ public class FeedActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         feeds = PrefManager.loadFeedInfo(this);
+        markedAsReadList = PrefManager.loadMarkedAsReadList(this);
     }
 
     @OnBackground
@@ -146,6 +148,10 @@ public class FeedActivity extends AppCompatActivity {
             ImageView imageView= (ImageView) convertView.findViewById(R.id.list_icon);
             // Populate the data into the template view using the data object
             tvName.setText(item.title);
+            if(markedAsReadList.contains(Util.getVideoID(item.url)))
+                tvName.setAlpha(0.5f);
+            else
+                tvName.setAlpha(1f);
             if(item.mediaMetadata.thumbnailUrl != null)
                 Glide.with(FeedActivity.this)
                         .load(item.mediaMetadata.thumbnailUrl)

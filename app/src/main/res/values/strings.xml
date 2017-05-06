@@ -50,4 +50,6 @@
 	<string name="title_video_download_folder">Video Folder</string>
 	<string name="summary_video_download_folder">Folder where to download the video files</string>
 	<string name="warning_library_empty">Library is empty! \n Click me to add a feed by sharing a playlist from your youtube app</string>
+	<string name="clear_title">Clear all the cache</string>
+	<string name="clear_description">It will clear all the settings and the library</string>
 </resources>

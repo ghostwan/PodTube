@@ -7,7 +7,7 @@ import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import static com.ghostwan.podtube.BuildConfig.DEBUG;
+import static com.ghostwan.podtube.Util.DEBUG;
 
 
 /**

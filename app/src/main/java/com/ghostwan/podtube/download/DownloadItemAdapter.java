@@ -25,7 +25,6 @@ import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.library.us.giga.get.DownloadManager;
 import com.ghostwan.podtube.library.us.giga.get.DownloadMission;
 import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
-import com.ghostwan.podtube.library.us.giga.util.Utility;
 
 
 import static com.ghostwan.podtube.download.TaskStatus.*;
@@ -180,8 +179,8 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
         if (deltaTime > 1000 && deltaDone > 0) {
             float speed = (float) deltaDone / deltaTime;
-            String speedStr = Utility.formatSpeed(speed * 1000);
-            String sizeStr = Utility.formatBytes(h.mission.length);
+            String speedStr = Util.formatSpeed(speed * 1000);
+            String sizeStr = Util.formatBytes(h.mission.length);
 
 //            h.size.setText(sizeStr + " " + speedStr);
 

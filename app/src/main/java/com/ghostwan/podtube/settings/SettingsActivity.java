@@ -1,5 +1,7 @@
 package com.ghostwan.podtube.settings;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -25,6 +27,34 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             initPreference(PrefManager.PREFERENCE_THREADS, PrefManager.PREFERENCE_THREADS_DEFAULT, normalCheckListener);
             initPreference(PrefManager.PREFERENCE_DOWNLOAD_AUDIO_FOLDER, PrefManager.getDefaultPath(), normalCheckListener);
             initPreference(PrefManager.PREFERENCE_DOWNLOAD_VIDEO_FOLDER, PrefManager.getDefaultPath(), normalCheckListener);
+
+            Preference button = findPreference("preference_clear");
+            button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which){
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    PrefManager.clearPref(getContext());
+                                    break;
+
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    dialog.dismiss();
+                                    break;
+                            }
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setMessage("Are you sure?")
+                            .setPositiveButton("Yes", dialogClickListener)
+                            .setNegativeButton("No", dialogClickListener)
+                            .show();
+                    return true;
+                }
+            });
         }
 
         private void initPreference(String preferenceName, String preferenceDefaultValue, Preference.OnPreferenceChangeListener listener) {

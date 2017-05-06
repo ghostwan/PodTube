@@ -1,6 +1,5 @@
 package com.ghostwan.podtube.library.us.giga.service;
 
-import android.Manifest;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -11,17 +10,16 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.*;
 import android.support.v4.app.NotificationCompat.Builder;
-import android.support.v4.content.PermissionChecker;
 import android.util.Log;
-import android.widget.Toast;
+import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.download.DownloadActivity;
 import com.ghostwan.podtube.download.DownloadingActivity;
-import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.library.us.giga.get.DownloadDataSource;
 import com.ghostwan.podtube.library.us.giga.get.DownloadManager;
 import com.ghostwan.podtube.library.us.giga.get.DownloadManagerImpl;
 import com.ghostwan.podtube.library.us.giga.get.DownloadMission;
 import com.ghostwan.podtube.library.us.giga.get.sqlite.SQLiteDownloadDataSource;
+import com.ghostwan.podtube.settings.PrefManager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -78,8 +76,11 @@ public class DownloadManagerService extends Service
 			ArrayList<String> paths = new ArrayList<>(2);
 
 			//FIXME add video / audio path
-			File folder = new File(Environment.getExternalStorageDirectory() + "/PodTube");
-			paths.add(folder.getAbsolutePath());
+			String videoPath = PrefManager.getAudioPath(this);
+			String audioPath = PrefManager.getAudioPath(this);
+			paths.add(PrefManager.getAudioPath(this));
+			if(!videoPath.equals(audioPath))
+				paths.add(PrefManager.getVideoPath(this));
 			mManager = new DownloadManagerImpl(paths, mDataSource);
 			if (DEBUG) {
 				Log.d(TAG, "mManager == null");

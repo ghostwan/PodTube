@@ -20,4 +20,8 @@
 	                    android:summary="@string/summary_video_download_folder">
 	</EditTextPreference>
 
+	<Preference android:title="@string/clear_title"
+	            android:key="preference_clear"
+	            android:summary="@string/clear_description"/>
+
 </PreferenceScreen>

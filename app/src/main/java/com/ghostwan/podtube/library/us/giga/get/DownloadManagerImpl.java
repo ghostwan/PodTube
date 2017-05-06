@@ -2,8 +2,8 @@ package com.ghostwan.podtube.library.us.giga.get;
 
 import android.support.annotation.Nullable;
 import android.util.Log;
+import com.ghostwan.podtube.Util;
 import com.google.gson.Gson;
-import com.ghostwan.podtube.library.us.giga.util.Utility;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -157,7 +157,7 @@ public class DownloadManagerImpl implements DownloadManager {
 
             for (File sub : subs) {
                 if (sub.isFile() && sub.getName().endsWith(".giga")) {
-                    String str = Utility.readFromFile(sub.getAbsolutePath());
+                    String str = Util.readFromFile(sub.getAbsolutePath());
                     if (str != null && !str.trim().equals("")) {
 
                         if (DEBUG) {

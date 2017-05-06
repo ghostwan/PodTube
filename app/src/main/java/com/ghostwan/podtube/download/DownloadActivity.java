@@ -12,6 +12,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,6 +39,7 @@ public class DownloadActivity extends Activity{
     private LinearLayout mainLayout;
     private ProgressBar mainProgressBar;
     private List<YtFragmentedVideo> formatsToShowList;
+    private List<String> markedAsReadList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,10 +48,16 @@ public class DownloadActivity extends Activity{
         setContentView(R.layout.activity_download);
         mainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mainProgressBar = (ProgressBar) findViewById(R.id.prgrBar);
-
+        markedAsReadList = PrefManager.loadMarkedAsReadList(this);
         if (checkPermission()) {
             getYoutubeDownloadUrl();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        PrefManager.saveMarkedAsReadList(this, markedAsReadList);
+        super.onDestroy();
     }
 
     @Override
@@ -70,7 +78,11 @@ public class DownloadActivity extends Activity{
     }
 
     private void getYoutubeDownloadUrl() {
+        String url = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        Log.i(TAG, "Try to download : "+url);
 
+        if(!markedAsReadList.contains(Util.getVideoID(url)))
+            markedAsReadList.add(Util.getVideoID(url));
         new YouTubeExtractor(this) {
 
             @Override
@@ -102,7 +114,7 @@ public class DownloadActivity extends Activity{
                     addButtonToMainLayout(vMeta.getTitle(), files);
                 }
             }
-        }.extract(getIntent().getStringExtra(Intent.EXTRA_TEXT), true, false);
+        }.extract(url, true, false);
     }
 
     private void addFormatToList(YtFile ytFile, SparseArray<YtFile> ytFiles) {

@@ -3,14 +3,14 @@ package com.ghostwan.podtube.library.us.giga.get;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import com.ghostwan.podtube.Util;
 import com.google.gson.Gson;
-import com.ghostwan.podtube.library.us.giga.util.Utility;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
-import static com.ghostwan.podtube.BuildConfig.DEBUG;
+import static com.ghostwan.podtube.Util.DEBUG;
 import static com.ghostwan.podtube.download.TaskStatus.*;
 
 public class DownloadMission {
@@ -333,7 +333,7 @@ public class DownloadMission {
      */
     private void doWriteThisToFile() {
         synchronized (blockState) {
-            Utility.writeToFile(getMetaFilename(), new Gson().toJson(this));
+            Util.writeToFile(getMetaFilename(), new Gson().toJson(this));
         }
     }
 
