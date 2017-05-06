@@ -1,4 +1,4 @@
-package com.ghostwan.podtube;
+package com.ghostwan.podtube.download;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -20,11 +19,11 @@ import android.widget.*;
 import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YtFile;
-import com.ghostwan.podtube.library.dmanager.download.DownloadManager;
-import com.ghostwan.podtube.library.dmanager.download.DownloadTask;
-import com.ghostwan.podtube.library.dmanager.download.TaskEntity;
+import com.ghostwan.podtube.R;
+import com.ghostwan.podtube.Util;
+import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
+import com.ghostwan.podtube.settings.PrefManager;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,7 +38,6 @@ public class DownloadActivity extends Activity{
     private LinearLayout mainLayout;
     private ProgressBar mainProgressBar;
     private List<YtFragmentedVideo> formatsToShowList;
-    private DownloadManager downloadManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +50,6 @@ public class DownloadActivity extends Activity{
         if (checkPermission()) {
             getYoutubeDownloadUrl();
         }
-        downloadManager = DownloadManager.getInstance();
-
     }
 
     @Override
@@ -157,15 +153,13 @@ public class DownloadActivity extends Activity{
                 }
                 filename = filename.replaceAll("\\\\|>|<|\"|\\||\\*|\\?|%|:|#|/", "");
                 filename += (ytFrVideo.height == -1) ? "" : "-" + ytFrVideo.height + "p";
-                boolean hideAudioDownloadNotification = false;
                 if (ytFrVideo.videoFile != null) {
-                    downloadFromUrl("video", ytFrVideo.videoFile.getUrl(), videoTitle,
-                            filename + "." + ytFrVideo.videoFile.getFormat().getExt(), false);
-                    hideAudioDownloadNotification = true;
+                    downloadFromUrl(Util.VIDEO_TYPE, ytFrVideo.videoFile.getUrl(), videoTitle,
+                            filename + "." + ytFrVideo.videoFile.getFormat().getExt());
                 }
                 if (ytFrVideo.audioFile != null) {
-                    downloadFromUrl("audio", ytFrVideo.audioFile.getUrl(), videoTitle,
-                            filename + "." + ytFrVideo.audioFile.getFormat().getExt(), hideAudioDownloadNotification);
+                    downloadFromUrl(Util.AUDIO_TYPE, ytFrVideo.audioFile.getUrl(), videoTitle,
+                            filename + "." + ytFrVideo.audioFile.getFormat().getExt());
                 }
                 finish();
             }
@@ -173,20 +167,12 @@ public class DownloadActivity extends Activity{
         mainLayout.addView(btn);
     }
 
-    private void downloadFromUrl(String type, String youtubeDlUrl, String downloadTitle, String fileName, boolean hide) {
-        File folder = new File(Environment.getExternalStorageDirectory() + "/PodTube");
-        if(!folder.exists())
-            folder.mkdir();
-//        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        final TaskEntity taskEntity = new TaskEntity.Builder()
-                .url(youtubeDlUrl)
-                .type(type)
-                .fileName(fileName)
-                .title(downloadTitle)
-                .filePath(folder.getAbsolutePath())
-                .build();
-        DownloadTask itemTask = new DownloadTask(taskEntity);
-        downloadManager.addTask(itemTask);
+    private void downloadFromUrl(String type, String youtubeDlUrl, String downloadTitle, String fileName) {
+        String path = PrefManager.getVideoPath(this);
+        if(Util.isAudio(type)) {
+            path = PrefManager.getAudioPath(this);
+        }
+        DownloadManagerService.startMission(this, youtubeDlUrl, path, fileName, type, PrefManager.getThreadCount(this));
     }
 
     private class YtFragmentedVideo {

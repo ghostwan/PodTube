@@ -1,9 +1,13 @@
-package com.ghostwan.podtube;
+package com.ghostwan.podtube.download;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.ghostwan.podtube.R;
+import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
 
 import java.io.File;
 
@@ -18,6 +24,7 @@ public class DownloadingActivity extends AppCompatActivity {
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    private DownloadManagerService.DMBinder mBinder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,13 +33,37 @@ public class DownloadingActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        // Bind the service
+        Intent intent = new Intent(this, DownloadManagerService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder binder) {
+            mBinder = (DownloadManagerService.DMBinder) binder;
+            updateList(mBinder);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            // What to do?
+        }
+    };
+
+    private void updateList(DownloadManagerService.DMBinder mBinder) {
+        DownloadItemAdapter adapter = new DownloadItemAdapter(this, mBinder);
+        recyclerView.setAdapter(adapter);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        DownloadItemAdapter adapter = new DownloadItemAdapter(this);
-        recyclerView.setAdapter(adapter);
+        if(mBinder != null)
+            updateList(mBinder);
+
     }
 
     @Override
@@ -59,5 +90,11 @@ public class DownloadingActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mConnection);
     }
 }

@@ -1,4 +1,4 @@
-package com.ghostwan.podtube.library.dmanager.download;
+package com.ghostwan.podtube.download;
 
 /**
  * Created by Yuan on 27/09/2016:10:48 AM.

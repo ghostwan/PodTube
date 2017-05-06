@@ -2,7 +2,6 @@ package com.ghostwan.podtube;
 
 import android.app.Application;
 import android.os.StrictMode;
-import com.ghostwan.podtube.library.dmanager.download.DownloadManager;
 import teaspoon.TeaSpoon;
 
 /**
@@ -15,7 +14,6 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         TeaSpoon.initialize();
-        DownloadManager.getInstance().init(this, 3);
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
     }
