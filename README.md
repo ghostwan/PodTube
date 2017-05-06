@@ -14,6 +14,10 @@ For example : https://www.youtube.com/user/CNN
 Or you can directly from your phone share a video or a playlist to either download it or add the feed in your library.
 
 ## What's new in 
+
+### 1.3.0:
+- Manually parse feed xml to retrieve the feed / item cover and description
+- Get feed / entry thumbnail
 ### 1.2.0:
 - Change downloader library to improve download performance use a modify version of Gigaget
 - Add preference to change downloads path
@@ -27,6 +31,8 @@ Or you can directly from your phone share a video or a playlist to either downlo
 
 ## Screenshots
 
+### Share Feed / Playlist to library 
+![alt text](screenshots/share_playlist.png "browse a feed list (user/channel/playlist)")
 ### Browse a feed 
 ![alt text](screenshots/add_feed.png "browse a feed list (user/channel/playlist)")
 ### Feed library
@@ -40,13 +46,14 @@ Or you can directly from your phone share a video or a playlist to either downlo
 
 - Android based YouTube url extractor : https://github.com/HaarigerHarald/android-youtubeExtractor
 - Annotation-triggered method call by specified thread : https://github.com/KoMinkyu/teaspoon
-- Atom RSS parser : https://github.com/einmalfel/Earl
 - Json Parser : https://github.com/google/gson
 - Gigaget Downloader : https://github.com/PaperAirplane-Dev-Team/GigaGet
+- Butterknife View binder : https://github.com/JakeWharton/butterknife
+- Glide Image downloader : https://github.com/bumptech/glide
+- Simple XML parser : http://simple.sourceforge.net/
 
 ## TODO (next):
 
-- Manually parse feed xml to retrieve the feed / item cover and description
 - Find a way to easily subscribe to a feed/user without going through pushbullet.
 - Allow to choose in which directory do download a file at download time
 - Find a way to be podcast player compatible
