@@ -58,10 +58,11 @@ WARNING: PUTTING PODTUBE OR ANY FORK OF IT INTO GOOGLE PLAYSTORE VIOLATES THEIR 
 
 ## TODO (next):
 
-- Allow to choose in which directory do download a file at download time
-- Find a way to be podcast player compatible
+- Choose in which directory do download a file at download time
+- Settings for a feed (download directory, category, automatic download...)
+- Make podtube compatible with most podcast player
+- Download automatically the last episode released
 - Search for feed to add
-- Download automatically the last episode released 
 - Have a cleaner UI
 - Improve code
 
