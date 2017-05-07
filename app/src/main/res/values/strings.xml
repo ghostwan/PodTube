@@ -44,10 +44,10 @@
 	<string name="summary_threads">Number of thread per download</string>
 	<string name="title_threads">Threads</string>
 
-	<string name="title_audio_download_folder">Audio Folder</string>
+	<string name="title_audio_download_folder">Default Audio Folder</string>
 	<string name="summary_audio_download_folder">Folder where to download the audio files</string>
 
-	<string name="title_video_download_folder">Video Folder</string>
+	<string name="title_video_download_folder">Default Video Folder</string>
 	<string name="summary_video_download_folder">Folder where to download the video files</string>
 	<string name="warning_library_empty">Library is empty! \n Click me to add a feed by sharing a playlist from your youtube app</string>
 	<string name="clear_title">Clear all the cache</string>
