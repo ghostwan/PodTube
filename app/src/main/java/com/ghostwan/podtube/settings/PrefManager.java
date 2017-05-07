@@ -114,7 +114,9 @@ public class PrefManager {
         Intent i = new Intent(activity, FilePickerActivity.class)
                 .putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, false)
                 .putExtra(FilePickerActivity.EXTRA_ALLOW_CREATE_DIR, true)
-                .putExtra(FilePickerActivity.EXTRA_MODE, FilePickerActivity.MODE_DIR);
+                .putExtra(FilePickerActivity.EXTRA_MODE, FilePickerActivity.MODE_DIR)
+                .putExtra(FilePickerActivity.EXTRA_START_PATH, getDefaultPath());
+
         activity.startActivityForResult(i, requestID);
     }
 

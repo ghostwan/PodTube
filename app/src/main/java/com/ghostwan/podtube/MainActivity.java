@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Util.checkPermissions(this, 0);
         listView = (ListView) findViewById(R.id.listView);
         waringMessage = (TextView) findViewById(R.id.waringMessage);
         waringMessage.setOnClickListener(new View.OnClickListener() {
