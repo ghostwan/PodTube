@@ -1,5 +1,5 @@
 # PodTube
-![alt text](screenshots/icon.png "") 
+![alt text](screenshots/icon.png) 
 
 Because [youtube RED](https://www.youtube.com/red) is not available in most country, this app allows you to download a youtube video or subscribe to a youtube channel.
 
@@ -12,6 +12,8 @@ click on the share button and select PodTube you will be able to subscribe to th
 For example : https://www.youtube.com/user/CNN
 
 Or you can directly from your phone share a video or a playlist to either download it or add the feed in your library.
+
+WARNING: PUTTING PODTUBE OR ANY FORK OF IT INTO GOOGLE PLAYSTORE VIOLATES THEIR TERMS OF CONDITIONS.
 
 ## What's new in 
 
@@ -31,16 +33,18 @@ Or you can directly from your phone share a video or a playlist to either downlo
 
 ## Screenshots
 
-### Share Feed / Playlist to library 
-![alt text](screenshots/share_playlist.png "browse a feed list (user/channel/playlist)")
+### Share/Add Playlist to library 
+![alt text](screenshots/share_playlist.png)
+### Share/Add User feed to library (Available since youtube 12.16.56)
+![alt text](screenshots/share_user.png)
 ### Browse a feed 
-![alt text](screenshots/add_feed.png "browse a feed list (user/channel/playlist)")
-### Feed library
-![alt text](screenshots/feed_list.png "Library list")
+![alt text](screenshots/add_feed.png)
+### Feed's library
+![alt text](screenshots/feed_list.png)
 ### Download video / audio
-![alt text](screenshots/download_item.png "Library list")
+![alt text](screenshots/download_item.png)
 ### Download Manager
-![alt text](screenshots/download_manager.png "Library list")
+![alt text](screenshots/download_manager.png)
 
 ## Libraries:
 
@@ -54,7 +58,6 @@ Or you can directly from your phone share a video or a playlist to either downlo
 
 ## TODO (next):
 
-- Find a way to easily subscribe to a feed/user without going through pushbullet.
 - Allow to choose in which directory do download a file at download time
 - Find a way to be podcast player compatible
 - Search for feed to add
@@ -62,6 +65,5 @@ Or you can directly from your phone share a video or a playlist to either downlo
 - Have a cleaner UI
 - Improve code
 
-WARNING: PUTTING PODTUBE OR ANY FORK OF IT INTO GOOGLE PLAYSTORE VIOLATES THEIR TERMS OF CONDITIONS.
 
 
