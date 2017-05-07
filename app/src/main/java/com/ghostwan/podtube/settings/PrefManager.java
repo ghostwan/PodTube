@@ -1,12 +1,15 @@
 package com.ghostwan.podtube.settings;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import com.ghostwan.podtube.feed.FeedInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.nononsenseapps.filepicker.FilePickerActivity;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -105,6 +108,14 @@ public class PrefManager {
         if(!folder.exists())
             folder.mkdir();
         return folder.getAbsolutePath();
+    }
+
+    public static void showFilePicker(Activity activity, int requestID) {
+        Intent i = new Intent(activity, FilePickerActivity.class)
+                .putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, false)
+                .putExtra(FilePickerActivity.EXTRA_ALLOW_CREATE_DIR, true)
+                .putExtra(FilePickerActivity.EXTRA_MODE, FilePickerActivity.MODE_DIR);
+        activity.startActivityForResult(i, requestID);
     }
 
 

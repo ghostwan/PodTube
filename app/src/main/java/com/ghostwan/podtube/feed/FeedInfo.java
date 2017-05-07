@@ -1,5 +1,8 @@
 package com.ghostwan.podtube.feed;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by erwan on 28/03/2017.
  */
@@ -8,10 +11,12 @@ public class FeedInfo {
 
     private String name;
     private String url;
+    private Map<String, String> settings;
 
     public FeedInfo(String name, String url) {
         this.name = name;
         this.url = url;
+        this.settings = new HashMap<>();
     }
 
     public FeedInfo(String name) {
@@ -32,6 +37,14 @@ public class FeedInfo {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public Map<String, String> getSettings() {
+        return settings;
+    }
+
+    public void setSettings(Map<String, String> settings) {
+        this.settings = settings;
     }
 
     @Override

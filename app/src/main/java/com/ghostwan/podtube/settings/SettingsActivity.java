@@ -1,20 +1,32 @@
 package com.ghostwan.podtube.settings;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
+import android.util.Log;
 import android.view.MenuItem;
 import com.ghostwan.podtube.R;
+import com.nononsenseapps.filepicker.Utils;
 
 public class SettingsActivity extends AppCompatPreferenceActivity {
+
+    private static final String TAG = "Preferences";
+    private static final int REQUEST_AUDIO_PATH = 0;
+    private static final int REQUEST_VIDEO_PATH = 1;
+    private MyPreferenceFragment preferenceFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
+        preferenceFragment = new MyPreferenceFragment();
+        getFragmentManager().beginTransaction().replace(android.R.id.content, preferenceFragment).commit();
     }
 
 
@@ -23,6 +35,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         @Override
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+
             addPreferencesFromResource(R.xml.preferences);
             initPreference(PrefManager.PREFERENCE_THREADS, PrefManager.PREFERENCE_THREADS_DEFAULT, normalCheckListener);
             initPreference(PrefManager.PREFERENCE_DOWNLOAD_AUDIO_FOLDER, PrefManager.getDefaultPath(), normalCheckListener);
@@ -74,6 +87,43 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
         };
 
+        @Override
+        public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
+            Log.d("TAG", "onPreferenceTreeClick() called with: preferenceScreen = [" + preferenceScreen + "], preference = [" + preference + "]");
+            if (preference.getKey().equals(PrefManager.PREFERENCE_DOWNLOAD_AUDIO_FOLDER) ) {
+                PrefManager.showFilePicker(getActivity(), REQUEST_AUDIO_PATH);
+            }
+            else if (preference.getKey().equals(PrefManager.PREFERENCE_DOWNLOAD_VIDEO_FOLDER) ) {
+                PrefManager.showFilePicker(getActivity(), REQUEST_VIDEO_PATH);
+            }
+            return super.onPreferenceTreeClick(preferenceScreen, preference);
+        }
+
+        private void setPreference(String key, String value) {
+            SharedPreferences defaultPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            defaultPreferences.edit().putString(key, value).apply();
+            Preference preference = getPreferenceScreen().findPreference(key);
+            preference.setSummary(value);
+        }
+
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "Request code: "+ requestCode + " result code :"+resultCode );
+        if(resultCode == Activity.RESULT_OK) {
+                String path = Utils.getFileForUri(data.getData()).getAbsolutePath();
+            switch (requestCode) {
+                case REQUEST_AUDIO_PATH:
+                    preferenceFragment.setPreference(PrefManager.PREFERENCE_DOWNLOAD_AUDIO_FOLDER, path);
+                    break;
+                case REQUEST_VIDEO_PATH:
+                    preferenceFragment.setPreference(PrefManager.PREFERENCE_DOWNLOAD_VIDEO_FOLDER, path);
+                    break;
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

@@ -8,17 +8,17 @@
 	                    android:summary="@string/summary_threads">
 	</EditTextPreference>
 
-	<EditTextPreference android:title="@string/title_audio_download_folder"
+	<Preference android:title="@string/title_audio_download_folder"
 	                    android:key="preference_download_audio_folder"
 	                    android:inputType="textUri"
 	                    android:summary="@string/summary_audio_download_folder">
-	</EditTextPreference>
+	</Preference>
 
-	<EditTextPreference android:title="@string/title_video_download_folder"
+	<Preference android:title="@string/title_video_download_folder"
 	                    android:key="preference_download_video_folder"
 	                    android:inputType="textUri"
 	                    android:summary="@string/summary_video_download_folder">
-	</EditTextPreference>
+	</Preference>
 
 	<Preference android:title="@string/clear_title"
 	            android:key="preference_clear"
