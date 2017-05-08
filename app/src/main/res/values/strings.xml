@@ -40,4 +40,6 @@
 	<string name="download_folder">Download folder:</string>
 	<string name="default_value">Default</string>
 	<string name="settings_title">Settings :</string>
+	<string name="media_scanner">Media Scanner</string>
+	<string name="media_scanner_description">Disable it to prevent other application to see your download files</string>
 </resources>

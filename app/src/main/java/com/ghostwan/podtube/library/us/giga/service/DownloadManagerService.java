@@ -239,7 +239,8 @@ public class DownloadManagerService extends Service
 		@Override
 		public void onFinish(DownloadMission downloadMission) {
 			postUpdateMessage();
-			notifyMediaScanner(downloadMission);
+			if(PrefManager.isMediaScannerEnable(getApplicationContext()))
+				notifyMediaScanner(downloadMission);
 		}
 
 		@Override

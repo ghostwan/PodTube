@@ -20,6 +20,12 @@
 	                    android:summary="@string/summary_video_download_folder">
 	</Preference>
 
+	<CheckBoxPreference android:title="@string/media_scanner"
+	                    android:key="preference_media_scanner"
+	                    android:defaultValue="true"
+	                    android:summary="@string/media_scanner_description"/>
+
+
 	<Preference android:title="@string/clear_title"
 	            android:key="preference_clear"
 	            android:summary="@string/clear_description"/>
