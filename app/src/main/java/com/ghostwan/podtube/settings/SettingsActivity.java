@@ -13,6 +13,7 @@ import android.preference.PreferenceScreen;
 import android.util.Log;
 import android.view.MenuItem;
 import com.ghostwan.podtube.R;
+import com.ghostwan.podtube.Util;
 import com.nononsenseapps.filepicker.Utils;
 
 public class SettingsActivity extends AppCompatPreferenceActivity {
@@ -38,8 +39,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             addPreferencesFromResource(R.xml.preferences);
             initPreference(PrefManager.PREFERENCE_THREADS, PrefManager.PREFERENCE_THREADS_DEFAULT, normalCheckListener);
-            initPreference(PrefManager.PREFERENCE_DOWNLOAD_AUDIO_FOLDER, PrefManager.getDefaultPath(), normalCheckListener);
-            initPreference(PrefManager.PREFERENCE_DOWNLOAD_VIDEO_FOLDER, PrefManager.getDefaultPath(), normalCheckListener);
+            initPreference(PrefManager.PREFERENCE_DOWNLOAD_AUDIO_FOLDER, Util.getDefaultPath(), normalCheckListener);
+            initPreference(PrefManager.PREFERENCE_DOWNLOAD_VIDEO_FOLDER, Util.getDefaultPath(), normalCheckListener);
 
             Preference button = findPreference("preference_clear");
             button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -91,10 +92,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
             Log.d("TAG", "onPreferenceTreeClick() called with: preferenceScreen = [" + preferenceScreen + "], preference = [" + preference + "]");
             if (preference.getKey().equals(PrefManager.PREFERENCE_DOWNLOAD_AUDIO_FOLDER) ) {
-                PrefManager.showFilePicker(getActivity(), REQUEST_AUDIO_PATH);
+                Util.showFilePicker(getActivity(), REQUEST_AUDIO_PATH);
             }
             else if (preference.getKey().equals(PrefManager.PREFERENCE_DOWNLOAD_VIDEO_FOLDER) ) {
-                PrefManager.showFilePicker(getActivity(), REQUEST_VIDEO_PATH);
+                Util.showFilePicker(getActivity(), REQUEST_VIDEO_PATH);
             }
             return super.onPreferenceTreeClick(preferenceScreen, preference);
         }

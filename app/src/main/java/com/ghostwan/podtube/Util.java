@@ -4,14 +4,20 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Environment;
+import android.support.design.widget.BaseTransientBottomBar;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.View;
 import com.ghostwan.podtube.parser.Feed;
 import com.ghostwan.podtube.parser.FeedParser;
+import com.nononsenseapps.filepicker.FilePickerActivity;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -24,16 +30,22 @@ import java.io.FileOutputStream;
 
 public class Util {
 
+    private static final String TAG = "Util";
+    public static boolean DEBUG = true;
+    public static final String ID = "ID";
     public static final String AUDIO_TYPE = "audio";
     public static final String VIDEO_TYPE = "video";
     public static final String RSS_URL_CHANNEL = "https://www.youtube.com/feeds/videos.xml?channel_id=";
     public static final String RSS_URL_USER = "https://www.youtube.com/feeds/videos.xml?user=";
     public static final String RSS_URL_PLAYLIST = "https://www.youtube.com/feeds/videos.xml?playlist_id=";
-    private static final String TAG = "Util";
 
     public static String getString(Context ctx, int resID, Object... data ) {
         String strMeatFormat = ctx.getString(resID);
         return String.format(strMeatFormat, data);
+    }
+
+    public static String getString(Context ctx, int resID) {
+        return ctx.getString(resID);
     }
 
     public static boolean isAudio(String text){
@@ -78,8 +90,6 @@ public class Util {
         url = url.replace("https://www.youtube.com/watch?v=", "");
         return url;
     }
-
-    public static boolean DEBUG = false;
 
     public static String formatBytes(long bytes) {
         if (bytes < 1024) {
@@ -184,5 +194,44 @@ public class Util {
         } else {
             return true;
         }
+    }
+
+    public static void showFilePicker(Activity activity, int requestID, String rootPath) {
+        Intent i = new Intent(activity, FilePickerActivity.class)
+                .putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, false)
+                .putExtra(FilePickerActivity.EXTRA_ALLOW_CREATE_DIR, true)
+                .putExtra(FilePickerActivity.EXTRA_MODE, FilePickerActivity.MODE_DIR);
+
+        if(rootPath != null)
+            i.putExtra(FilePickerActivity.EXTRA_START_PATH, rootPath);
+        activity.startActivityForResult(i, requestID);
+    }
+
+    public static void showFilePicker(Activity activity, int requestID) {
+        showFilePicker(activity, requestID, getDefaultPath());
+    }
+
+    public static void showSnack(View view, String text, BaseTransientBottomBar.BaseCallback<Snackbar> baseCallback) {
+        Snackbar snack = Snackbar.make(view, text , Snackbar.LENGTH_SHORT);
+        if(baseCallback != null)
+            snack.addCallback(baseCallback);
+        snack.show();
+    }
+
+    public static void showSnack(View view, int resID, BaseTransientBottomBar.BaseCallback<Snackbar> baseCallback) {
+        String strMeatFormat = view.getResources().getString(resID);
+        showSnack(view, strMeatFormat, baseCallback);
+    }
+
+    public static void showSnack(View view, int resID, Object data, BaseTransientBottomBar.BaseCallback<Snackbar> baseCallback) {
+        String strMeatFormat = view.getResources().getString(resID);
+        showSnack(view, String.format(strMeatFormat, data), baseCallback);
+    }
+
+    public static String getDefaultPath() {
+        File folder = new File(Environment.getExternalStorageDirectory() + "/PodTube");
+        if(!folder.exists())
+            folder.mkdir();
+        return folder.getAbsolutePath();
     }
 }

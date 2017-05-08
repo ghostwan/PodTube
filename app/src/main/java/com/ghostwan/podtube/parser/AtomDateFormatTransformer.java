@@ -2,7 +2,6 @@ package com.ghostwan.podtube.parser;
 
 import org.simpleframework.xml.transform.Transform;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 

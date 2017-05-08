@@ -10,8 +10,8 @@
 		tools:showIn="@layout/activity_main"
 		tools:context="com.ghostwan.podtube.MainActivity">
 
-	<ListView
-			android:id="@+id/listView"
+	<android.support.v7.widget.RecyclerView
+			android:id="@+id/recyclerView"
 			android:visibility="gone"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"/>

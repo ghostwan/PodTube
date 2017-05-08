@@ -1,15 +1,12 @@
 package com.ghostwan.podtube.settings;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Environment;
 import android.preference.PreferenceManager;
+import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.feed.FeedInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.nononsenseapps.filepicker.FilePickerActivity;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -88,7 +85,7 @@ public class PrefManager {
 
     public static String getAudioPath(Context context) {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String value = sharedPrefs.getString(PREFERENCE_DOWNLOAD_AUDIO_FOLDER, getDefaultPath());
+        String value = sharedPrefs.getString(PREFERENCE_DOWNLOAD_AUDIO_FOLDER, Util.getDefaultPath());
         File folder = new File(value);
         if(!folder.exists())
             folder.mkdir();
@@ -96,28 +93,11 @@ public class PrefManager {
     }
     public static String getVideoPath(Context context) {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String value = sharedPrefs.getString(PREFERENCE_DOWNLOAD_VIDEO_FOLDER, getDefaultPath());
+        String value = sharedPrefs.getString(PREFERENCE_DOWNLOAD_VIDEO_FOLDER, Util.getDefaultPath());
         File folder = new File(value);
         if(!folder.exists())
             folder.mkdir();
         return value;
-    }
-
-    public static String getDefaultPath() {
-        File folder = new File(Environment.getExternalStorageDirectory() + "/PodTube");
-        if(!folder.exists())
-            folder.mkdir();
-        return folder.getAbsolutePath();
-    }
-
-    public static void showFilePicker(Activity activity, int requestID) {
-        Intent i = new Intent(activity, FilePickerActivity.class)
-                .putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, false)
-                .putExtra(FilePickerActivity.EXTRA_ALLOW_CREATE_DIR, true)
-                .putExtra(FilePickerActivity.EXTRA_MODE, FilePickerActivity.MODE_DIR)
-                .putExtra(FilePickerActivity.EXTRA_START_PATH, getDefaultPath());
-
-        activity.startActivityForResult(i, requestID);
     }
 
 

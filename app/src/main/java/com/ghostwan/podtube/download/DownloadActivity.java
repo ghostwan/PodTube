@@ -1,16 +1,10 @@
 package com.ghostwan.podtube.download;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.SparseArray;
@@ -35,6 +29,7 @@ public class DownloadActivity extends Activity{
     private static final int ITAG_FOR_AUDIO = 140;
     private static final String TAG = "DownloadActivity";
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+    public static final String EXTRA_PATH = "EXTRA_PATH";
 
     private LinearLayout mainLayout;
     private ProgressBar mainProgressBar;
@@ -180,9 +175,14 @@ public class DownloadActivity extends Activity{
     }
 
     private void downloadFromUrl(String type, String youtubeDlUrl, String downloadTitle, String fileName) {
-        String path = PrefManager.getVideoPath(this);
-        if(Util.isAudio(type)) {
-            path = PrefManager.getAudioPath(this);
+        String path = getIntent().getStringExtra(EXTRA_PATH);
+        if(path == null) {
+            if(Util.isAudio(type)) {
+                path = PrefManager.getAudioPath(this);
+            }
+            else {
+                path = PrefManager.getVideoPath(this);
+            }
         }
         DownloadManagerService.startMission(this, youtubeDlUrl, path, fileName, type, PrefManager.getThreadCount(this));
     }
@@ -192,8 +192,6 @@ public class DownloadActivity extends Activity{
         YtFile audioFile;
         YtFile videoFile;
     }
-
-
 
 
 }

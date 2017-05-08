@@ -14,6 +14,7 @@ import android.util.Log;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.download.DownloadActivity;
 import com.ghostwan.podtube.download.DownloadingActivity;
+import com.ghostwan.podtube.feed.FeedInfo;
 import com.ghostwan.podtube.library.us.giga.get.DownloadDataSource;
 import com.ghostwan.podtube.library.us.giga.get.DownloadManager;
 import com.ghostwan.podtube.library.us.giga.get.DownloadManagerImpl;
@@ -21,10 +22,11 @@ import com.ghostwan.podtube.library.us.giga.get.DownloadMission;
 import com.ghostwan.podtube.library.us.giga.get.sqlite.SQLiteDownloadDataSource;
 import com.ghostwan.podtube.settings.PrefManager;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
-import static com.ghostwan.podtube.BuildConfig.DEBUG;
+import static com.ghostwan.podtube.Util.DEBUG;
+
 
 public class DownloadManagerService extends Service
 {
@@ -73,14 +75,8 @@ public class DownloadManagerService extends Service
 			mDataSource = new SQLiteDownloadDataSource(this);
 		}
 		if (mManager == null) {
-			ArrayList<String> paths = new ArrayList<>(2);
 
-			//FIXME add video / audio path
-			String videoPath = PrefManager.getAudioPath(this);
-			String audioPath = PrefManager.getAudioPath(this);
-			paths.add(PrefManager.getAudioPath(this));
-			if(!videoPath.equals(audioPath))
-				paths.add(PrefManager.getVideoPath(this));
+			ArrayList<String> paths = getMissionsPath();
 			mManager = new DownloadManagerImpl(paths, mDataSource);
 			if (DEBUG) {
 				Log.d(TAG, "mManager == null");
@@ -131,6 +127,23 @@ public class DownloadManagerService extends Service
 			}
 		};
 		
+	}
+
+	private ArrayList<String> getMissionsPath() {
+		ArrayList<String> paths = new ArrayList<>();
+		paths.add(PrefManager.getAudioPath(this));
+		String path = PrefManager.getVideoPath(this);
+		if(!paths.contains(path))
+			paths.add(path);
+		List<FeedInfo> feeds = PrefManager.loadFeedInfo(this);
+		for (FeedInfo feed : feeds) {
+			if(feed.isSettingSet(FeedInfo.SETTING_FOLDER)) {
+				path = feed.getSettingValue(FeedInfo.SETTING_FOLDER);
+				if(!paths.contains(path))
+					paths.add(path);
+			}
+		}
+		return paths;
 	}
 
 	private void startMissionAsync(final String url, final String location, final String name,

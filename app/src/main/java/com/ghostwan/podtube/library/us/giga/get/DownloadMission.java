@@ -84,7 +84,7 @@ public class DownloadMission {
     public DownloadMission() {
     }
 
-    public DownloadMission(String name, String url, String location, String type ) {
+    public DownloadMission(String name, String url, String location, String type) {
         if (name == null) throw new NullPointerException("name is null");
         if (name.isEmpty()) throw new IllegalArgumentException("name is empty");
         if (url == null) throw new NullPointerException("url is null");
@@ -356,15 +356,15 @@ public class DownloadMission {
 
 
     public int getStatus() {
-        if(done == 0)
+        if (done == 0)
             return TASK_STATUS_INIT;
-        if(!running && recovered)
+        if (!running && recovered)
             return TASK_STATUS_PAUSE;
-        if(running && !finished)
+        if (running && !finished)
             return TASK_STATUS_DOWNLOADING;
-        if(finished)
+        if (finished)
             return TASK_STATUS_FINISH;
-        if(errCode != -1)
+        if (errCode != -1)
             return TASK_STATUS_REQUEST_ERROR;
 
         return TASK_STATUS_QUEUE;

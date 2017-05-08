@@ -11,9 +11,7 @@ import com.ghostwan.podtube.library.us.giga.get.DownloadMission;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.ghostwan.podtube.library.us.giga.get.sqlite.DownloadMissionSQLiteHelper.KEY_LOCATION;
-import static com.ghostwan.podtube.library.us.giga.get.sqlite.DownloadMissionSQLiteHelper.KEY_NAME;
-import static com.ghostwan.podtube.library.us.giga.get.sqlite.DownloadMissionSQLiteHelper.MISSIONS_TABLE_NAME;
+import static com.ghostwan.podtube.library.us.giga.get.sqlite.DownloadMissionSQLiteHelper.*;
 
 
 /**

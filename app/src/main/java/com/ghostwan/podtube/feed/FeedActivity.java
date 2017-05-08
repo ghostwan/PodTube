@@ -13,7 +13,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
@@ -53,27 +56,22 @@ public class FeedActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String feedName = "";
-                Snackbar snack = Snackbar.make(view, Util.getString(ctx, R.string.feed_add_library, feedName ), Snackbar.LENGTH_SHORT);
-                snack.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                Util.showSnack(view, R.string.feed_add_library, feedName, new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        super.onDismissed(transientBottomBar, event);
+                        FeedActivity.this.finish();
+                    }
 
                     @Override
                     public void onShown(Snackbar transientBottomBar) {
                         super.onShown(transientBottomBar);
                         feeds.add(currentInfo);
                     }
-
-                    @Override
-                    public void onDismissed(Snackbar transientBottomBar, int event) {
-                        super.onDismissed(transientBottomBar, event);
-                        FeedActivity.this.finish();
-                    }
                 });
-                snack.show();
             }
         });
         fab.setVisibility(View.GONE);
-        String ytLink = getIntent().getStringExtra(Intent.EXTRA_TEXT);
-        fetchFeed(ytLink);
     }
 
     @Override
@@ -81,6 +79,13 @@ public class FeedActivity extends AppCompatActivity {
         super.onStart();
         feeds = PrefManager.loadFeedInfo(this);
         markedAsReadList = PrefManager.loadMarkedAsReadList(this);
+        int position = getIntent().getIntExtra(Util.ID, -1);
+        String ytLink = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        if(position != -1) {
+            currentInfo = feeds.get(position);
+            ytLink = currentInfo.getUrl();
+        }
+        fetchFeed(ytLink);
     }
 
     @OnBackground
@@ -88,26 +93,23 @@ public class FeedActivity extends AppCompatActivity {
         Log.i(TAG, "Url to fetch : "+url);
         final Feed feed = Util.getFeedFromYoutubeUrl(url);
         if (feed == null) {
-            Snackbar snack = Snackbar.make(mainView, Util.getString(ctx, R.string.feed_error, url ), Snackbar.LENGTH_SHORT);
-            snack.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-
+            Util.showSnack(mainView, R.string.feed_error, url, new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                 @Override
                 public void onDismissed(Snackbar transientBottomBar, int event) {
                     super.onDismissed(transientBottomBar, event);
                     FeedActivity.this.finish();
                 }
             });
-            snack.show();
             return;
         }
 
         try {
-
             Log.i(TAG, "Processing feed: " + feed.title);
             String name = feed.author.name +" - "+feed.title;
             if(feed.title.contains(feed.author.name))
                 name = feed.title;
-            currentInfo = new FeedInfo(name, url);
+            if(currentInfo == null)
+                currentInfo = new FeedInfo(name, url);
 
             final String finalName = name;
             runOnUiThread(new Runnable() {
@@ -174,6 +176,8 @@ public class FeedActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     Intent activityIntent = new Intent(FeedActivity.this, DownloadActivity.class);
                     activityIntent.putExtra(Intent.EXTRA_TEXT, item.url);
+                    if(currentInfo.isSettingSet(FeedInfo.SETTING_FOLDER))
+                        activityIntent.putExtra(DownloadActivity.EXTRA_PATH, currentInfo.getSettingValue(FeedInfo.SETTING_FOLDER));
                     startActivity(activityIntent);
                     finish();
                 }

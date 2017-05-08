@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class FeedInfo {
 
+    public static String SETTING_FOLDER = "setting_folder";
     private String name;
     private String url;
     private Map<String, String> settings;
@@ -40,11 +41,29 @@ public class FeedInfo {
     }
 
     public Map<String, String> getSettings() {
+        if (settings == null)
+            settings = new HashMap<>();
         return settings;
     }
 
     public void setSettings(Map<String, String> settings) {
         this.settings = settings;
+    }
+
+    public boolean isSettingSet(String key) {
+        return getSettings().containsKey(key);
+    }
+
+    public String getSettingValue(String key) {
+        return getSettings().get(key);
+    }
+
+    public void setSettingValue(String key, String value) {
+        getSettings().put(key, value);
+    }
+
+    public void deleteSetting(String key) {
+        getSettings().remove(key);
     }
 
     @Override
