@@ -12,10 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import com.bumptech.glide.Glide;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
@@ -29,7 +25,7 @@ import java.util.List;
  * Created by erwan on 07/05/2017.
  */
 
-public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.CViewHolder> {
+public class FeedAdapter extends RecyclerView.Adapter<CViewHolder> {
 
     private static final String TAG = "FeedAdapter";
     private Context context;
@@ -140,20 +136,4 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.CViewHolder> {
     }
 
 
-    public class CViewHolder extends RecyclerView.ViewHolder {
-
-        @BindView(R.id.name)
-        TextView name;
-
-        @BindView(R.id.list_icon)
-        ImageView image;
-
-        @BindView(R.id.item_main_layout)
-        RelativeLayout layout;
-
-        public CViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
-    }
 }
