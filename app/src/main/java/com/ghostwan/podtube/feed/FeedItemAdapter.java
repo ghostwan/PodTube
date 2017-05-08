@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
-import com.ghostwan.podtube.download.DownloadActivity;
+import com.ghostwan.podtube.download.DownloadChooserActivity;
 import com.ghostwan.podtube.parser.FeedEntry;
 import com.ghostwan.podtube.settings.PrefManager;
 
@@ -71,10 +71,10 @@ public class FeedItemAdapter extends RecyclerView.Adapter<CViewHolder> {
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent activityIntent = new Intent(context, DownloadActivity.class);
+                Intent activityIntent = new Intent(context, DownloadChooserActivity.class);
                 activityIntent.putExtra(Intent.EXTRA_TEXT, item.url);
                 if(feedInfo.isSettingSet(FeedInfo.SETTING_FOLDER))
-                    activityIntent.putExtra(DownloadActivity.EXTRA_PATH, feedInfo.getSettingValue(FeedInfo.SETTING_FOLDER));
+                    activityIntent.putExtra(DownloadChooserActivity.EXTRA_PATH, feedInfo.getSettingValue(FeedInfo.SETTING_FOLDER));
                 context.startActivity(activityIntent);
             }
         });

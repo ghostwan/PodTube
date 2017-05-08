@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
-import com.ghostwan.podtube.download.DownloadActivity;
+import com.ghostwan.podtube.download.DownloadChooserActivity;
 import com.ghostwan.podtube.feed.FeedContentActivity;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class DispatchActivity extends AppCompatActivity {
             if (ytLink != null
                     && (ytLink.contains("://youtu.be/") || ytLink.contains("youtube.com/watch?v="))) {
 
-                Intent activityIntent = new Intent(this, DownloadActivity.class);
+                Intent activityIntent = new Intent(this, DownloadChooserActivity.class);
                 activityIntent.putExtra(Intent.EXTRA_TEXT, ytLink);
                 startActivity(activityIntent);
 

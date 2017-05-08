@@ -20,7 +20,7 @@ import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
 
 import java.io.File;
 
-public class DownloadingActivity extends AppCompatActivity {
+public class DownloadListActivity extends AppCompatActivity {
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;

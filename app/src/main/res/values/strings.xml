@@ -1,14 +1,7 @@
 <resources>
 	<string name="app_name">Podtube</string>
 	<string name="action_settings">Settings</string>
-	<string name="title_activity_subscribe">SuscribeActivity</string>
-	<string name="title_activity_scrolling">ScrollingActivity</string>
 	<string name="title_activity_downloading">Download list</string>
-	<string name="title_activity_feed_settings">Feed Settings list</string>
-	<string name="feed_description">
-		"Youtube feed description"
-	</string>
-	<string name="parsing_feed">Parsing feed…</string>
 	<string name="error_no_yt_link">Not a valid YouTube link!</string>
 	<string name="error_permission_denied">Permission denied application is quitting!</string>
 	<string name="app_update">Couldn\'t extract URLs you may need an update</string>
@@ -17,28 +10,15 @@
 	<string name="title_activity_feed">FeedActivity</string>
 	<string name="feed_add_library">Feed %1$s add to the library</string>
 	<string name="feed_remove_library">Feed %1$s remove to the library</string>
-	<string name="start">Start</string>
-	<string name="pause">Pause</string>
-	<string name="wait">Wait</string>
-	<string name="cancel">Cancel</string>
-	<string name="resume">Resume</string>
 	<string name="delete">Delete</string>
-	<string name="failure">Failed!</string>
-	<string name="detail">Detail</string>
 	<string name="play">Play</string>
 	<string name="retry">Retry</string>
-	<string name="connecting">Connecting…</string>
-	<string name="queue">Queue</string>
 	<string name="request_error">Request error</string>
 	<string name="delete_error">You need to pause the job before deleting!</string>
 	<string name="storage_error">Not enough space</string>
 	<string name="action_title">Choose an action</string>
 	<string name="description_title">Description</string>
 	<string name="action_podtube_directory">Goto PodTube directory</string>
-	<string name="start_download">Start Download</string>
-	<string name="queue_download">Queue Download</string>
-	<string name="error_download">Download Error</string>
-	<string name="download_finished">Download Finished!</string>
 	<string name="msg_running">PodTube downloading</string>
 	<string name="msg_running_detail">Tap for details</string>
 	<string name="title_activity_settings">Settings</string>
@@ -56,8 +36,6 @@
 	<string name="clear_description">It will clear all the settings and the library</string>
 	<string name="permission_required_title">Permission required</string>
 	<string name="permission_required_description">To download a file it is necessary to allow required permission</string>
-	<string name="select_folder">Select download folder</string>
-	<string name="select_folder_current_is">Select download folder, current is : %1$s </string>
 	<string name="settings">Settings</string>
 	<string name="download_folder">Download folder:</string>
 	<string name="default_value">Default</string>

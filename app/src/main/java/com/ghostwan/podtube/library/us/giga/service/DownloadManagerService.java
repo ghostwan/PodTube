@@ -12,8 +12,8 @@ import android.os.*;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.util.Log;
 import com.ghostwan.podtube.R;
-import com.ghostwan.podtube.download.DownloadActivity;
-import com.ghostwan.podtube.download.DownloadingActivity;
+import com.ghostwan.podtube.download.DownloadChooserActivity;
+import com.ghostwan.podtube.download.DownloadListActivity;
 import com.ghostwan.podtube.feed.FeedInfo;
 import com.ghostwan.podtube.library.us.giga.get.DownloadDataSource;
 import com.ghostwan.podtube.library.us.giga.get.DownloadManager;
@@ -86,7 +86,7 @@ public class DownloadManagerService extends Service
 
 		Intent i = new Intent();
 		i.setAction(Intent.ACTION_MAIN);
-		i.setClass(this, DownloadActivity.class);
+		i.setClass(this, DownloadChooserActivity.class);
 
 		Drawable icon = this.getResources().getDrawable(R.mipmap.ic_launcher);
 
@@ -98,7 +98,7 @@ public class DownloadManagerService extends Service
 				.setContentText(getString(R.string.msg_running_detail));
 
 		PendingIntent pendingIntent =
-				PendingIntent.getActivity(this, 0, new Intent(this, DownloadingActivity.class), PendingIntent.FLAG_UPDATE_CURRENT
+				PendingIntent.getActivity(this, 0, new Intent(this, DownloadListActivity.class), PendingIntent.FLAG_UPDATE_CURRENT
 				);
 
 		builder.setContentIntent(pendingIntent);

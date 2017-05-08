@@ -24,10 +24,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class DownloadActivity extends Activity{
+public class DownloadChooserActivity extends Activity{
 
     private static final int ITAG_FOR_AUDIO = 140;
-    private static final String TAG = "DownloadActivity";
+    private static final String TAG = "DownloadChooserActivity";
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
     public static final String EXTRA_PATH = "EXTRA_PATH";
 
@@ -84,7 +84,7 @@ public class DownloadActivity extends Activity{
             public void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta vMeta) {
                 mainProgressBar.setVisibility(View.GONE);
                 if (ytFiles == null) {
-                    TextView tv = new TextView(DownloadActivity.this);
+                    TextView tv = new TextView(DownloadChooserActivity.this);
                     tv.setText(R.string.app_update);
                     tv.setMovementMethod(LinkMovementMethod.getInstance());
                     mainLayout.addView(tv);

@@ -19,7 +19,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
-import com.ghostwan.podtube.download.DownloadingActivity;
+import com.ghostwan.podtube.download.DownloadListActivity;
 import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
 import com.ghostwan.podtube.settings.PrefManager;
 import com.ghostwan.podtube.settings.SettingsActivity;
@@ -72,7 +72,7 @@ public class LibraryActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent activityIntent = new Intent(LibraryActivity.this, DownloadingActivity.class);
+                Intent activityIntent = new Intent(LibraryActivity.this, DownloadListActivity.class);
                 startActivity(activityIntent);
             }
         });
