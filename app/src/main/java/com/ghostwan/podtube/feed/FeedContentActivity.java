@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -37,6 +38,9 @@ public class FeedContentActivity extends AppCompatActivity {
     @BindView(R.id.fab)
     FloatingActionButton fab;
 
+    @BindView(R.id.swipeContainer)
+    SwipeRefreshLayout swipeRefreshLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,25 +71,32 @@ public class FeedContentActivity extends AppCompatActivity {
                 });
             }
         });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                fetchFeed();
+            }
+        });
         fab.setVisibility(View.GONE);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        feeds = PrefManager.loadFeedInfo(this);
-
-        int position = getIntent().getIntExtra(Util.ID, -1);
-        String ytLink = getIntent().getStringExtra(Intent.EXTRA_TEXT);
-        if(position != -1) {
-            currentInfo = feeds.get(position);
-            ytLink = currentInfo.getUrl();
-        }
-        fetchFeed(ytLink);
+        fetchFeed();
     }
 
     @OnBackground
-    protected void fetchFeed(String url) {
+    protected void fetchFeed() {
+        feeds = PrefManager.loadFeedInfo(this);
+
+        int position = getIntent().getIntExtra(Util.ID, -1);
+        String url = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        if(position != -1) {
+            currentInfo = feeds.get(position);
+            url = currentInfo.getUrl();
+        }
         Log.i(TAG, "Url to fetch : "+url);
         final Feed feed = Util.getFeedFromYoutubeUrl(url);
         if (feed == null) {
@@ -112,6 +123,7 @@ public class FeedContentActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     setTitle(finalName);
+                    swipeRefreshLayout.setRefreshing(false);
                     FeedItemAdapter feedItemAdapter = new FeedItemAdapter(FeedContentActivity.this, feed.entries, currentInfo);
                     recyclerView.setAdapter(feedItemAdapter);
                     if(!feeds.contains(currentInfo))
