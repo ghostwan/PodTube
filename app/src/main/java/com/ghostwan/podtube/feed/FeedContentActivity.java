@@ -21,9 +21,9 @@ import teaspoon.annotations.OnBackground;
 
 import java.util.List;
 
-public class FeedActivity extends AppCompatActivity {
+public class FeedContentActivity extends AppCompatActivity {
 
-    private static final String TAG = "FeedActivity";
+    private static final String TAG = "FeedContentActivity";
     private List<FeedInfo> feeds;
     private FeedInfo currentInfo;
     private View mainView;
@@ -56,7 +56,7 @@ public class FeedActivity extends AppCompatActivity {
                     @Override
                     public void onDismissed(Snackbar transientBottomBar, int event) {
                         super.onDismissed(transientBottomBar, event);
-                        FeedActivity.this.finish();
+                        FeedContentActivity.this.finish();
                     }
 
                     @Override
@@ -93,7 +93,7 @@ public class FeedActivity extends AppCompatActivity {
                 @Override
                 public void onDismissed(Snackbar transientBottomBar, int event) {
                     super.onDismissed(transientBottomBar, event);
-                    FeedActivity.this.finish();
+                    FeedContentActivity.this.finish();
                 }
             });
             return;
@@ -112,7 +112,7 @@ public class FeedActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     setTitle(finalName);
-                    FeedItemAdapter feedItemAdapter = new FeedItemAdapter(FeedActivity.this, feed.entries, currentInfo);
+                    FeedItemAdapter feedItemAdapter = new FeedItemAdapter(FeedContentActivity.this, feed.entries, currentInfo);
                     recyclerView.setAdapter(feedItemAdapter);
                     if(!feeds.contains(currentInfo))
                         fab.setVisibility(View.VISIBLE);

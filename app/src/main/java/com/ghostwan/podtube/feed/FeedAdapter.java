@@ -117,7 +117,7 @@ public class FeedAdapter extends RecyclerView.Adapter<CViewHolder> {
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent activityIntent = new Intent(context, FeedActivity.class);
+                Intent activityIntent = new Intent(context, FeedContentActivity.class);
                 activityIntent.putExtra(Util.ID, position);
                 context.startActivity(activityIntent);
             }

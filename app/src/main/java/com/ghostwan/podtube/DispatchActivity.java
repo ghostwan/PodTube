@@ -6,7 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 import com.ghostwan.podtube.download.DownloadActivity;
-import com.ghostwan.podtube.feed.FeedActivity;
+import com.ghostwan.podtube.feed.FeedContentActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ public class DispatchActivity extends AppCompatActivity {
                     ytLink.contains("www.youtube.com/user") ||
                     ytLink.contains("www.youtube.com/playlist")
             )) {
-                Intent activityIntent = new Intent(this, FeedActivity.class);
+                Intent activityIntent = new Intent(this, FeedContentActivity.class);
                 activityIntent.putExtra(Intent.EXTRA_TEXT, ytLink);
                 startActivity(activityIntent);
             } else {

@@ -15,7 +15,7 @@
 			android:supportsRtl="true"
 			android:theme="@style/AppTheme">
 		<activity
-				android:name=".MainActivity"
+				android:name=".feed.LibraryActivity"
 				android:label="@string/app_name"
 				android:theme="@style/AppTheme.NoActionBar">
 			<intent-filter>
@@ -31,7 +31,7 @@
 				android:theme="@style/PopUpTheme">
 		</activity>
 		<activity
-				android:name=".feed.FeedActivity"
+				android:name=".feed.FeedContentActivity"
 				android:label="@string/title_activity_feed"
 				android:theme="@style/AppTheme.NoActionBar">
 		</activity>
@@ -79,10 +79,10 @@
 		<activity
 				android:name=".settings.SettingsActivity"
 				android:label="@string/title_activity_settings"
-				android:parentActivityName=".MainActivity">
+				android:parentActivityName=".feed.LibraryActivity">
 			<meta-data
 					android:name="android.support.PARENT_ACTIVITY"
-					android:value="com.ghostwan.podtube.MainActivity"/>
+					android:value="com.ghostwan.podtube.feed.LibraryActivity"/>
 		</activity>
 		<activity android:name=".feed.FeedSettingsActivity">
 		</activity>

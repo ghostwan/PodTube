@@ -1,4 +1,4 @@
-package com.ghostwan.podtube;
+package com.ghostwan.podtube.feed;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,15 +17,16 @@ import android.view.View;
 import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.ghostwan.podtube.R;
+import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.download.DownloadingActivity;
-import com.ghostwan.podtube.feed.FeedAdapter;
 import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
 import com.ghostwan.podtube.settings.PrefManager;
 import com.ghostwan.podtube.settings.SettingsActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class LibraryActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "LibraryActivity";
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent activityIntent = new Intent(MainActivity.this, DownloadingActivity.class);
+                Intent activityIntent = new Intent(LibraryActivity.this, DownloadingActivity.class);
                 startActivity(activityIntent);
             }
         });
