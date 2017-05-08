@@ -42,4 +42,8 @@
 	<string name="settings_title">Settings :</string>
 	<string name="media_scanner">Media Scanner</string>
 	<string name="media_scanner_description">Disable it to prevent other application to see your download files</string>
+	<string name="done">Done: %1$s</string>
+	<string name="downloading">$1$s / %1$s</string>
+	<string name="display_error">ERR</string>
+	<string name="none">None</string>
 </resources>

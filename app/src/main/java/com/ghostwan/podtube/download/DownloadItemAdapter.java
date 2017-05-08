@@ -55,15 +55,15 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     }
 
     @Override
-    public void onViewRecycled(CViewHolder h) {
-        super.onViewRecycled(h);
-        h.mission.removeListener(h.observer);
-        h.mission = null;
-        h.observer = null;
-        h.position = -1;
-        h.lastTimeStamp = -1;
-        h.lastDone = -1;
-        h.colorId = 0;
+    public void onViewRecycled(CViewHolder holder) {
+        super.onViewRecycled(holder);
+        holder.mission.removeListener(holder.observer);
+        holder.mission = null;
+        holder.observer = null;
+        holder.position = -1;
+        holder.lastTimeStamp = -1;
+        holder.lastDone = -1;
+        holder.colorId = 0;
     }
 
     @Override
@@ -112,9 +112,6 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 break;
         }
 
-        updateProgress(holder);
-
-
         holder.downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -145,6 +142,37 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 return true;
             }
         });
+
+        holder.progressBar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                holder.progressBar.setVisibility(View.GONE);
+                holder.progressView.setVisibility(View.GONE);
+                holder.speedView.setVisibility(View.GONE);
+                holder.sizeText.setVisibility(View.VISIBLE);
+            }
+        });
+
+        holder.sizeText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                holder.progressBar.setVisibility(View.GONE);
+                holder.progressView.setVisibility(View.GONE);
+                holder.sizeText.setVisibility(View.GONE);
+                holder.speedView.setVisibility(View.VISIBLE);
+            }
+        });
+        holder.speedView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                holder.progressBar.setVisibility(View.VISIBLE);
+                holder.progressView.setVisibility(View.VISIBLE);
+                holder.sizeText.setVisibility(View.GONE);
+                holder.speedView.setVisibility(View.GONE);
+            }
+        });
+
+        updateProgress(holder);
     }
 
 
@@ -154,6 +182,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
     private void updateProgress(CViewHolder h, boolean finished) {
         if (h.mission == null) return;
+
 
         long now = System.currentTimeMillis();
 
@@ -170,7 +199,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
         if (deltaTime == 0 || deltaTime > 1000 || finished) {
             if (h.mission.errCode > 0) {
-                h.progressView.setText("ERR");
+                h.progressView.setText(R.string.display_error);
             } else {
                 String percent = getPercent(h.mission.done, h.mission.length);
                 h.progressBar.setProgress(Integer.parseInt(percent));
@@ -181,12 +210,26 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         if (deltaTime > 1000 && deltaDone > 0) {
             float speed = (float) deltaDone / deltaTime;
             String speedStr = Util.formatSpeed(speed * 1000);
-            String sizeStr = Util.formatBytes(h.mission.length);
 
-//            h.size.setText(sizeStr + " " + speedStr);
+            h.speedView.setText(speedStr);
 
             h.lastTimeStamp = now;
             h.lastDone = h.mission.done;
+
+            if(h.mission.finished)
+                h.sizeText.setText(Util.getString(mContext, R.string.done,  Util.formatBytes(h.mission.length)));
+            else
+                h.sizeText.setText(Util.formatBytes(h.mission.done)+" / "+Util.formatBytes(h.mission.length));
+        }
+        else {
+            if(h.mission.finished) {
+                h.speedView.setText(R.string.none);
+                h.sizeText.setText(Util.getString(mContext, R.string.done,  Util.formatBytes(h.mission.length)));
+            }
+            else if(!h.mission.running) {
+                h.speedView.setText(R.string.none);
+                h.sizeText.setText(Util.formatBytes(h.mission.done)+" / "+Util.formatBytes(h.mission.length));
+            }
         }
     }
 
@@ -320,6 +363,12 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
         @BindView(R.id.list_item_progress_text)
         TextView progressView;
+
+        @BindView(R.id.speed_text)
+        TextView speedView;
+
+        @BindView(R.id.size_text)
+        TextView sizeText;
 
         @BindView(R.id.list_item_state_button)
         FloatingActionButton downloadButton;

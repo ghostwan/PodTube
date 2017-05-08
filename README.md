@@ -19,6 +19,8 @@ WARNING: PUTTING PODTUBE OR ANY FORK OF IT INTO GOOGLE PLAYSTORE VIOLATES THEIR 
 
 ### 1.3.1:
 - Allow to set a custom download folder for a feed
+- Refresh feed list by swipping
+- Add download speed /size information (click on the progress bar)
 ### 1.3.0:
 - Manually parse feed xml to retrieve the feed / item cover and description
 - Get feed / entry thumbnail
@@ -67,7 +69,6 @@ WARNING: PUTTING PODTUBE OR ANY FORK OF IT INTO GOOGLE PLAYSTORE VIOLATES THEIR 
 - Search for feed to add
 - New marked when a new episode is available
 - Button "Mark all as read"
-- Update list by dragging from the top
 - Erase specific settings
 - Have a cleaner UI
 - Improve code
