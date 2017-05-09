@@ -11,6 +11,7 @@
 	<string name="feed_add_library">Feed %1$s add to the library</string>
 	<string name="feed_remove_library">Feed %1$s remove to the library</string>
 	<string name="delete">Delete</string>
+	<string name="merge">Merge audio/video file</string>
 	<string name="play">Play</string>
 	<string name="retry">Retry</string>
 	<string name="request_error">Request error</string>

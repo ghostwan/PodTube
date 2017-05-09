@@ -3,6 +3,8 @@ package com.ghostwan.podtube.download;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -149,16 +151,25 @@ public class DownloadChooserActivity extends Activity{
     }
 
 
-    private void addButtonToMainLayout(final String videoTitle, final YtFragmentedVideo ytFrVideo) {
+    private void addButtonToMainLayout(final String mediaTitle, final YtFragmentedVideo ytFrVideo) {
         // Display some buttons and let the user choose the format
         String btnText;
+
         if (ytFrVideo.height == -1)
             btnText = "Audio " + ytFrVideo.audioFile.getFormat().getAudioBitrate() + " kbit/s";
         else
-            btnText = (ytFrVideo.videoFile.getFormat().getFps() == 60) ? ytFrVideo.height + "p60" :
-                    ytFrVideo.height + "p";
+            btnText = "Video " +((ytFrVideo.videoFile.getFormat().getFps() == 60) ? ytFrVideo.height + "p60" : ytFrVideo.height + "p");
         Button btn = new Button(this);
         btn.setText(btnText);
+        if (ytFrVideo.videoFile != null) {
+            int color = Color.parseColor("#377be8"); //The color u want
+            btn.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        else {
+            int color = Color.parseColor("#FF4081"); //The color u want
+            btn.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        btn.setTextColor(Color.parseColor("#FFFFFF"));
         if(PrefManager.needToDisplayFileSize(this))
             addSizeToButton(btn, ytFrVideo.videoFile != null ? ytFrVideo.videoFile.getUrl() : ytFrVideo.audioFile.getUrl());
         btn.setOnClickListener(new OnClickListener() {
@@ -166,19 +177,28 @@ public class DownloadChooserActivity extends Activity{
             @Override
             public void onClick(View v) {
                 String filename;
-                if (videoTitle.length() > 55) {
-                    filename = videoTitle.substring(0, 55);
+                if (mediaTitle.length() > 55) {
+                    filename = mediaTitle.substring(0, 55);
                 } else {
-                    filename = videoTitle;
+                    filename = mediaTitle;
                 }
                 filename = filename.replaceAll("\\\\|>|<|\"|\\||\\*|\\?|%|:|#|/", "");
                 filename += (ytFrVideo.height == -1) ? "" : "-" + ytFrVideo.height + "p";
+
                 if (ytFrVideo.videoFile != null) {
-                    downloadFromUrl(Util.VIDEO_TYPE, ytFrVideo.videoFile.getUrl(), videoTitle,
+                    String mediaType = Util.VIDEO_TYPE;
+                    if(ytFrVideo.audioFile != null) // If audioFile is not null it means it a two files video
+                        mediaType = Util.VIDEO_PART_TYPE;
+
+                    downloadFromUrl(mediaType, ytFrVideo.videoFile.getUrl(), mediaTitle,
                             filename + "." + ytFrVideo.videoFile.getFormat().getExt());
                 }
                 if (ytFrVideo.audioFile != null) {
-                    downloadFromUrl(Util.AUDIO_TYPE, ytFrVideo.audioFile.getUrl(), videoTitle,
+                    String mediaType = Util.AUDIO_TYPE;
+                    if(ytFrVideo.videoFile != null) // If videoFile is not null it means it a two files video
+                        mediaType = Util.AUDIO_PART_TYPE;
+
+                    downloadFromUrl(mediaType, ytFrVideo.audioFile.getUrl(), mediaTitle,
                             filename + "." + ytFrVideo.audioFile.getFormat().getExt());
                 }
                 finish();
@@ -208,7 +228,7 @@ public class DownloadChooserActivity extends Activity{
     private void downloadFromUrl(String type, String youtubeDlUrl, String downloadTitle, String fileName) {
         String path = getIntent().getStringExtra(EXTRA_PATH);
         if(path == null) {
-            if(Util.isAudio(type)) {
+            if(type.equals(Util.AUDIO_TYPE)) {
                 path = PrefManager.getAudioPath(this);
             }
             else {

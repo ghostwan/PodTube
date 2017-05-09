@@ -303,6 +303,10 @@ public class DownloadMission {
         }
     }
 
+    public String[] getFileTokens(){
+        return (location + "/" + name).split("\\.(?=[^\\.]+$)");
+    }
+
     /**
      * Removes the file and the meta file
      */

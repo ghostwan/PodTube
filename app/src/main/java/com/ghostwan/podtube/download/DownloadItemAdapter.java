@@ -23,11 +23,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.coremedia.iso.boxes.Container;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.library.us.giga.get.DownloadManager;
 import com.ghostwan.podtube.library.us.giga.get.DownloadMission;
 import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
+import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import teaspoon.annotations.OnBackground;
+import teaspoon.annotations.OnUi;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import static com.ghostwan.podtube.download.TaskStatus.*;
 
@@ -39,6 +49,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
 
     private static final String TAG = "DownloadItemAdapter";
+    private static final String TEMP_FILE_NAME = "/merging_file";
     private final DownloadManager mDownloadManager;
     private Context mContext;
     private DownloadManagerService.DMBinder mBinder;
@@ -75,15 +86,29 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         holder.titleView.setText(holder.mission.name);
         holder.itemView.setTag(holder.mission.url);
 
-        if (holder.mission.type.equals(Util.VIDEO_TYPE)) {
-            int color = Color.parseColor("#377be8"); //The color u want
+        if (holder.mission.type.equals(Util.AUDIO_TYPE)) {
+            int color = Color.parseColor("#FF4081");
+            holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        else if(holder.mission.type.equals(Util.VIDEO_TYPE)) {
+            int color = Color.parseColor("#377be8");
+            holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        else if(holder.mission.type.equals(Util.VIDEO_PART_TYPE)) {
+            int color = Color.parseColor("#fc9e1b");
+            holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        else if(holder.mission.type.equals(Util.AUDIO_PART_TYPE)) {
+            int color = Color.parseColor("#d68617");
             holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
             holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
         else {
-            int color = Color.parseColor("#FF4081"); //The color u want
-            holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
-            holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            holder.progressBar.getProgressDrawable().clearColorFilter();
+            holder.downloadButton.getBackground().clearColorFilter();
         }
 
         int status = holder.mission.getStatus();
@@ -92,12 +117,6 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             case TASK_STATUS_INIT:
                 holder.setImage(R.drawable.ic_start);
                 break;
-            case TASK_STATUS_QUEUE:
-                holder.setImage(R.drawable.ic_queue);
-                break;
-            case TASK_STATUS_CONNECTING:
-                holder.setImage(R.drawable.ic_connecting);
-                break;
             case TASK_STATUS_DOWNLOADING:
                 holder.setImage(R.drawable.ic_pause);
                 break;
@@ -105,7 +124,15 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 holder.setImage(R.drawable.ic_resume);
                 break;
             case TASK_STATUS_FINISH:
-                holder.setImage(R.drawable.ic_play);
+                if(holder.mission.type.equals(Util.VIDEO_PART_TYPE)) {
+                    if(isAudioPartDone(holder.mission))
+                        holder.setImage(R.drawable.ic_connecting);
+                    else
+                        holder.setImage(R.drawable.ic_queue);
+                }
+                else {
+                    holder.setImage(R.drawable.ic_play);
+                }
                 break;
             case TASK_STATUS_REQUEST_ERROR:
             case TASK_STATUS_STORAGE_ERROR:
@@ -128,8 +155,12 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                         play(holder.mission);
                         break;
                     case R.drawable.ic_error:
-                        showErrorDialog(holder.mission);
+                        showErrorDialog(holder);
                         break;
+                    case R.drawable.ic_connecting:
+                        mergeMp4(holder);
+                        break;
+
                 }
             }
         });
@@ -170,6 +201,11 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         });
 
         updateProgress(holder);
+    }
+
+    private boolean isAudioPartDone(DownloadMission mission) {
+        return new File(mission.getFileTokens()[0]+".m4a").exists() &&
+                ! new File(mission.getFileTokens()[0]+".m4a.giga").exists();
     }
 
 
@@ -278,14 +314,8 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         }
     }
 
-    private void retry(DownloadMission mission) {
-        delete(mission);
-        mission.fallback = false;
-        notifyDataSetChanged();
-    }
 
-
-    private void showOptionDialog(final DownloadMission itemTask) {
+    private void showOptionDialog(final DownloadMission mission) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.action_title);
         final CharSequence[] optionDialogActions = {
@@ -298,10 +328,10 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 Log.i(TAG, "Choice is " + optionDialogActions[which]);
                 switch (which) {
                     case 0:
-                        play(itemTask);
+                        play(mission);
                         break;
                     case 1:
-                        delete(itemTask);
+                        delete(mission);
                         break;
                 }
             }
@@ -310,7 +340,41 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     }
 
 
-    private void showErrorDialog(final DownloadMission itemTask) {
+    @OnBackground
+    private void mergeMp4(CViewHolder holder) {
+        notifyUI(holder.progressLayout,"Merging "+holder.mission.name + " ...");
+        try {
+            String inFilePathVideo=holder.mission.getFileTokens()[0]+".mp4";
+            String inFilePathAudio=holder.mission.getFileTokens()[0]+".m4a";
+
+            Movie video = MovieCreator.build(inFilePathVideo);
+            Movie audio = MovieCreator.build(inFilePathAudio);
+            video.addTrack(audio.getTracks().get(0));
+            Container out = new DefaultMp4Builder().build(video);
+            long currentMillis = System.currentTimeMillis();
+            FileOutputStream fos = new FileOutputStream(new File(holder.mission.location + TEMP_FILE_NAME + currentMillis + ".mp4"));
+            out.writeContainer(fos.getChannel());
+            fos.close();
+            File inAudioFile = new File(inFilePathAudio);
+            inAudioFile.delete();
+            File inVideoFile = new File(inFilePathVideo);
+            if (inVideoFile.delete()) {
+                File tempOutFile = new File(holder.mission.location + TEMP_FILE_NAME + currentMillis + ".mp4");
+                tempOutFile.renameTo(inVideoFile);
+                notifyUI(holder.progressLayout, "Merged completed for: "+holder.mission.name);
+
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "merge error ", e);
+        }
+    }
+
+    @OnUi
+    private void notifyUI(View view, String message) {
+        Util.showSnack(view, message, null);
+    }
+
+    private void showErrorDialog(final CViewHolder itemTask) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.action_title);
         final CharSequence[] optionDialogActions = {
@@ -323,10 +387,10 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 Log.i(TAG, "Choice is " + optionDialogActions[which]);
                 switch (which) {
                     case 0:
-                        retry(itemTask);
+                        resume(itemTask);
                         break;
                     case 1:
-                        delete(itemTask);
+                        delete(itemTask.mission);
                         break;
                 }
             }
