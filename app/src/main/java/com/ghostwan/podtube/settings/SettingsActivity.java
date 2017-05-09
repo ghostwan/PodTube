@@ -62,9 +62,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     };
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setMessage("Are you sure?")
-                            .setPositiveButton("Yes", dialogClickListener)
-                            .setNegativeButton("No", dialogClickListener)
+                    builder.setMessage(R.string.are_you_sure)
+                            .setPositiveButton(R.string.yes, dialogClickListener)
+                            .setNegativeButton(R.string.no, dialogClickListener)
                             .show();
                     return true;
                 }

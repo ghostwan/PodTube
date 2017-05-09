@@ -25,6 +25,11 @@
 	                    android:defaultValue="true"
 	                    android:summary="@string/media_scanner_description"/>
 
+	<CheckBoxPreference android:title="@string/display_file_size"
+	                    android:key="preference_display_size"
+	                    android:defaultValue="true"
+	                    android:summary="@string/display_file_size_description"/>
+
 
 	<Preference android:title="@string/clear_title"
 	            android:key="preference_clear"

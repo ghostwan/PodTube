@@ -31,7 +31,8 @@ import java.io.FileOutputStream;
 public class Util {
 
     private static final String TAG = "Util";
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
+
     public static final String ID = "ID";
     public static final String AUDIO_TYPE = "audio";
     public static final String VIDEO_TYPE = "video";

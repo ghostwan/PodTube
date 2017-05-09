@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
@@ -18,7 +17,11 @@ import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
 import com.ghostwan.podtube.settings.PrefManager;
+import teaspoon.annotations.OnBackground;
 
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -86,8 +89,16 @@ public class DownloadChooserActivity extends Activity{
                 if (ytFiles == null) {
                     TextView tv = new TextView(DownloadChooserActivity.this);
                     tv.setText(R.string.app_update);
-                    tv.setMovementMethod(LinkMovementMethod.getInstance());
                     mainLayout.addView(tv);
+                    Button button= new Button(DownloadChooserActivity.this);
+                    button.setText(R.string.retry);
+                    button.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            getYoutubeDownloadUrl();
+                        }
+                    });
+                    mainLayout.addView(button);
                     return;
                 }
                 formatsToShowList = new ArrayList<>();
@@ -148,6 +159,8 @@ public class DownloadChooserActivity extends Activity{
                     ytFrVideo.height + "p";
         Button btn = new Button(this);
         btn.setText(btnText);
+        if(PrefManager.needToDisplayFileSize(this))
+            addSizeToButton(btn, ytFrVideo.videoFile != null ? ytFrVideo.videoFile.getUrl() : ytFrVideo.audioFile.getUrl());
         btn.setOnClickListener(new OnClickListener() {
 
             @Override
@@ -172,6 +185,24 @@ public class DownloadChooserActivity extends Activity{
             }
         });
         mainLayout.addView(btn);
+    }
+
+    @OnBackground
+    private void addSizeToButton(final Button button, String textUrl) {
+        try {
+            URL url = new URL(textUrl);
+            URLConnection urlConnection = url.openConnection();
+            urlConnection.connect();
+            final int file_size = urlConnection.getContentLength();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    button.setText(button.getText()+" ( "+Util.formatBytes(file_size)+" )");
+                }
+            });
+        } catch (IOException e) {
+            Log.i(TAG, "error : ", e);
+        }
     }
 
     private void downloadFromUrl(String type, String youtubeDlUrl, String downloadTitle, String fileName) {

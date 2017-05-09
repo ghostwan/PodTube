@@ -27,6 +27,7 @@ public class PrefManager {
     public static final String PREFERENCE_DOWNLOAD_AUDIO_FOLDER = "preference_download_audio_folder";
     public static final String PREFERENCE_DOWNLOAD_VIDEO_FOLDER = "preference_download_video_folder";
     public static final String PREFERENCE_MEDIA_SCANNER = "preference_media_scanner";
+    public static final String PREFERENCE_DISPLAY_SIZE = "preference_display_size";
 
 
 
@@ -38,6 +39,7 @@ public class PrefManager {
         editor.remove(PREFERENCE_DOWNLOAD_AUDIO_FOLDER);
         editor.remove(PREFERENCE_DOWNLOAD_VIDEO_FOLDER);
         editor.remove(PREFERENCE_MEDIA_SCANNER);
+        editor.remove(PREFERENCE_DISPLAY_SIZE);
         editor.apply();
     }
     public static List<FeedInfo> loadFeedInfo(Context context) {
@@ -105,6 +107,11 @@ public class PrefManager {
     public static boolean isMediaScannerEnable(Context context) {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         return sharedPrefs.getBoolean(PREFERENCE_MEDIA_SCANNER, true);
+    }
+
+    public static boolean needToDisplayFileSize(Context context) {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPrefs.getBoolean(PREFERENCE_DISPLAY_SIZE, true);
     }
 
 

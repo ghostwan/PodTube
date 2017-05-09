@@ -4,7 +4,7 @@
 	<string name="title_activity_downloading">Download list</string>
 	<string name="error_no_yt_link">Not a valid YouTube link!</string>
 	<string name="error_permission_denied">Permission denied application is quitting!</string>
-	<string name="app_update">Couldn\'t extract URLs you may need an update</string>
+	<string name="app_update">Couldn\'t extract URLs</string>
 	<string name="feed_error">Url: %1$s is not supported!</string>
 	<string name="feed_settings_error">Wrong feed</string>
 	<string name="title_activity_feed">FeedActivity</string>
@@ -46,4 +46,9 @@
 	<string name="downloading">$1$s / %1$s</string>
 	<string name="display_error">ERR</string>
 	<string name="none">None</string>
+	<string name="are_you_sure">Are you sure?</string>
+	<string name="yes">Yes</string>
+	<string name="no">No</string>
+	<string name="display_file_size">Display file size</string>
+	<string name="display_file_size_description">Display file size on download chooser</string>
 </resources>
