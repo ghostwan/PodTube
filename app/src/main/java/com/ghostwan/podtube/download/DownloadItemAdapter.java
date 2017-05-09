@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -143,32 +144,28 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             }
         });
 
-        holder.progressBar.setOnClickListener(new View.OnClickListener() {
+        holder.progressLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                holder.progressBar.setVisibility(View.GONE);
-                holder.progressView.setVisibility(View.GONE);
-                holder.speedView.setVisibility(View.GONE);
-                holder.sizeText.setVisibility(View.VISIBLE);
-            }
-        });
+                if(holder.progressBar.getVisibility() == View.VISIBLE) {
+                    holder.progressBar.setVisibility(View.GONE);
+                    holder.progressView.setVisibility(View.GONE);
+                    holder.speedView.setVisibility(View.GONE);
+                    holder.sizeText.setVisibility(View.VISIBLE);
+                }
+                else if (holder.sizeText.getVisibility() == View.VISIBLE){
+                    holder.progressBar.setVisibility(View.GONE);
+                    holder.progressView.setVisibility(View.GONE);
+                    holder.speedView.setVisibility(View.VISIBLE);
+                    holder.sizeText.setVisibility(View.GONE);
+                }
+                else if(holder.speedView.getVisibility() == View.VISIBLE) {
+                    holder.progressBar.setVisibility(View.VISIBLE);
+                    holder.progressView.setVisibility(View.VISIBLE);
+                    holder.sizeText.setVisibility(View.GONE);
+                    holder.speedView.setVisibility(View.GONE);
+                }
 
-        holder.sizeText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                holder.progressBar.setVisibility(View.GONE);
-                holder.progressView.setVisibility(View.GONE);
-                holder.sizeText.setVisibility(View.GONE);
-                holder.speedView.setVisibility(View.VISIBLE);
-            }
-        });
-        holder.speedView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                holder.progressBar.setVisibility(View.VISIBLE);
-                holder.progressView.setVisibility(View.VISIBLE);
-                holder.sizeText.setVisibility(View.GONE);
-                holder.speedView.setVisibility(View.GONE);
             }
         });
 
@@ -376,6 +373,9 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         @BindView(R.id.card_view)
         CardView cardView;
 
+        @BindView(R.id.progress_layout)
+        LinearLayout progressLayout;
+
         int resource;
         public MissionObserver observer;
         public DownloadMission mission;
@@ -437,7 +437,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             mAdapter.updateProgress(mHolder);
             if (mHolder.itemView.getTag().equals(downloadMission.url)) {
                 mHolder.setImage(R.drawable.ic_error);
-                Toast.makeText(mContext, R.string.request_error, Toast.LENGTH_SHORT).show();
+                Util.showSnack(mHolder.cardView, R.string.request_error, null);
             }
         }
 
