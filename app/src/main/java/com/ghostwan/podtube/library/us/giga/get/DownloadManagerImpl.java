@@ -19,6 +19,7 @@ public class DownloadManagerImpl implements DownloadManager {
     private final DownloadDataSource mDownloadDataSource;
 
     private final ArrayList<DownloadMission> mMissions = new ArrayList<DownloadMission>();
+    private Collection<String> mSearchLocations;
 
     /**
      * Create a new instance
@@ -28,7 +29,8 @@ public class DownloadManagerImpl implements DownloadManager {
      */
     public DownloadManagerImpl(Collection<String> searchLocations, DownloadDataSource downloadDataSource) {
         mDownloadDataSource = downloadDataSource;
-        loadMissions(searchLocations);
+        mSearchLocations = searchLocations;
+        loadMissions();
     }
 
     @Override
@@ -101,10 +103,11 @@ public class DownloadManagerImpl implements DownloadManager {
     }
 
 
-    private void loadMissions(Iterable<String> searchLocations) {
+    @Override
+    public void loadMissions() {
         mMissions.clear();
         loadFinishedMissions();
-        for (String location : searchLocations) {
+        for (String location : mSearchLocations) {
             loadMissions(location);
         }
 

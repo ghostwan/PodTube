@@ -51,6 +51,11 @@ public interface DownloadManager
 	void deleteMission(DownloadMission mission);
 
 	/**
+	 * Load or reload the missions
+	 */
+	void loadMissions();
+
+	/**
 	 * Get the download mission by its identifier
 	 * @param id the identifier of the download mission
 	 * @return the download mission or null if the mission doesn't exist

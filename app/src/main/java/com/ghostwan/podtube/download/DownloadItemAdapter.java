@@ -160,7 +160,6 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                     case R.drawable.ic_connecting:
                         mergeMp4(holder);
                         break;
-
                 }
             }
         });
@@ -361,7 +360,12 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             if (inVideoFile.delete()) {
                 File tempOutFile = new File(holder.mission.location + TEMP_FILE_NAME + currentMillis + ".mp4");
                 tempOutFile.renameTo(inVideoFile);
+                holder.mission.type = Util.VIDEO_TYPE;
+                holder.mission.length = holder.mission.done;
+                holder.mission.writeThisToFile();
                 notifyUI(holder.progressLayout, "Merged completed for: "+holder.mission.name);
+                mDownloadManager.loadMissions();
+                notifyDataSetChanged();
 
             }
         } catch (IOException e) {
