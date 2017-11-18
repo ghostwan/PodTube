@@ -46,8 +46,8 @@ public class DownloadChooserActivity extends Activity{
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_download);
-        mainLayout = (LinearLayout) findViewById(R.id.main_layout);
-        mainProgressBar = (ProgressBar) findViewById(R.id.prgrBar);
+        mainLayout = findViewById(R.id.main_layout);
+        mainProgressBar = findViewById(R.id.prgrBar);
         markedAsReadList = PrefManager.loadMarkedAsReadList(this);
         if (Util.checkPermissions(this, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)) {
             getYoutubeDownloadUrl();
@@ -83,46 +83,36 @@ public class DownloadChooserActivity extends Activity{
 
         if(!markedAsReadList.contains(Util.getVideoID(url)))
             markedAsReadList.add(Util.getVideoID(url));
-        new YouTubeExtractor(this) {
 
-            @Override
-            public void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta vMeta) {
-                mainProgressBar.setVisibility(View.GONE);
-                if (ytFiles == null) {
-                    TextView tv = new TextView(DownloadChooserActivity.this);
-                    tv.setText(R.string.app_update);
-                    mainLayout.addView(tv);
-                    Button button= new Button(DownloadChooserActivity.this);
-                    button.setText(R.string.retry);
-                    button.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            getYoutubeDownloadUrl();
-                        }
-                    });
-                    mainLayout.addView(button);
-                    return;
-                }
-                formatsToShowList = new ArrayList<>();
-                for (int i = 0, itag; i < ytFiles.size(); i++) {
-                    itag = ytFiles.keyAt(i);
-                    YtFile ytFile = ytFiles.get(itag);
+        MyYoutubeExtractor myYoutubeExtractor = new MyYoutubeExtractor(this, (ytFiles, vMeta) -> {
 
-                    if (ytFile.getFormat().getHeight() == -1 || ytFile.getFormat().getHeight() >= 360) {
-                        addFormatToList(ytFile, ytFiles);
-                    }
-                }
-                Collections.sort(formatsToShowList, new Comparator<YtFragmentedVideo>() {
-                    @Override
-                    public int compare(YtFragmentedVideo lhs, YtFragmentedVideo rhs) {
-                        return lhs.height - rhs.height;
-                    }
-                });
-                for (YtFragmentedVideo files : formatsToShowList) {
-                    addButtonToMainLayout(vMeta.getTitle(), files);
+            mainProgressBar.setVisibility(View.GONE);
+            if (ytFiles == null) {
+                TextView tv = new TextView(DownloadChooserActivity.this);
+                tv.setText(R.string.app_update);
+                mainLayout.addView(tv);
+                Button button= new Button(DownloadChooserActivity.this);
+                button.setText(R.string.retry);
+                button.setOnClickListener(v -> getYoutubeDownloadUrl());
+                mainLayout.addView(button);
+                return;
+            }
+            formatsToShowList = new ArrayList<>();
+            for (int i = 0, itag; i < ytFiles.size(); i++) {
+                itag = ytFiles.keyAt(i);
+                YtFile ytFile = ytFiles.get(itag);
+
+                if (ytFile.getFormat().getHeight() == -1 || ytFile.getFormat().getHeight() >= 360) {
+                    addFormatToList(ytFile, ytFiles);
                 }
             }
-        }.extract(url, true, false);
+            Collections.sort(formatsToShowList, Comparator.comparingInt(lhs -> lhs.height));
+            for (YtFragmentedVideo files : formatsToShowList) {
+                addButtonToMainLayout(vMeta.getTitle(), files);
+            }
+        });
+
+        myYoutubeExtractor.extract(url, true, false);
     }
 
     private void addFormatToList(YtFile ytFile, SparseArray<YtFile> ytFiles) {
