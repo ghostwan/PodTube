@@ -13,7 +13,7 @@ public class MediaMetadata {
     @Attribute(name = "url")
     public String thumbnailUrl;
 
-    @Element
+    @Element(required = false)
     public String description;
 
     @Path("community/starRating")
