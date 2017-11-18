@@ -8,6 +8,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -87,40 +88,32 @@ public class FeedAdapter extends RecyclerView.Adapter<CViewHolder> {
         getFeedInfo(feed, holder.image);
 
         // Return the completed view to render on screen
-        holder.layout.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(final View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle(R.string.action_title);
-                final CharSequence[] optionDialogActions = {
-                        context.getString(R.string.delete), //0
-                        context.getString(R.string.settings), //0
-                };
-                builder.setItems(optionDialogActions, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(TAG, "Choice is " + optionDialogActions[which]);
-                        switch (which) {
-                            case 0:
-                                removeFeed(feed, v);
-                                break;
-                            case 1:
-                                showFeedSettings(position);
-                                break;
-                        }
-                    }
-                });
-                builder.show();
-                return false;
-            }
+        holder.layout.setOnLongClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.action_title);
+            final CharSequence[] optionDialogActions = {
+                    context.getString(R.string.delete), //0
+                    context.getString(R.string.settings), //0
+            };
+            builder.setItems(optionDialogActions, (dialog, which) -> {
+                Log.i(TAG, "Choice is " + optionDialogActions[which]);
+                switch (which) {
+                    case 0:
+                        removeFeed(feed, v);
+                        break;
+                    case 1:
+                        showFeedSettings(position);
+                        break;
+                }
+            });
+            builder.show();
+            return false;
         });
-        holder.layout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent activityIntent = new Intent(context, FeedContentActivity.class);
-                activityIntent.putExtra(Util.ID, position);
-                context.startActivity(activityIntent);
-            }
+        holder.layout.setOnClickListener(v -> {
+            Intent activityIntent = new Intent(context, FeedContentActivity.class);
+            activityIntent.putExtra(Util.ID, position);
+            context.startActivity(activityIntent);
         });
     }
 

@@ -13,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -140,63 +141,55 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 break;
         }
 
-        holder.downloadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (holder.getResource()) {
-                    case R.drawable.ic_start:
-                    case R.drawable.ic_resume:
-                        resume(holder);
-                        break;
-                    case R.drawable.ic_pause:
-                        pause(holder);
-                        break;
-                    case R.drawable.ic_play:
-                        play(holder.mission);
-                        break;
-                    case R.drawable.ic_error:
-                        showErrorDialog(holder);
-                        break;
-                    case R.drawable.ic_connecting:
-                        mergeMp4(holder);
-                        break;
-                }
-            }
-        });
-
-        holder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if(!holder.mission.finished)
+        holder.downloadButton.setOnClickListener(v -> {
+            switch (holder.getResource()) {
+                case R.drawable.ic_start:
+                case R.drawable.ic_resume:
+                    resume(holder);
+                    break;
+                case R.drawable.ic_pause:
                     pause(holder);
-                showOptionDialog(holder.mission);
-                return true;
+                    break;
+                case R.drawable.ic_play:
+                    play(holder.mission);
+                    break;
+                case R.drawable.ic_error:
+                    showErrorDialog(holder);
+                    break;
+                case R.drawable.ic_connecting:
+                    mergeMp4(holder);
+                    break;
             }
         });
 
-        holder.progressLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(holder.progressBar.getVisibility() == View.VISIBLE) {
-                    holder.progressBar.setVisibility(View.GONE);
-                    holder.progressView.setVisibility(View.GONE);
-                    holder.speedView.setVisibility(View.GONE);
-                    holder.sizeText.setVisibility(View.VISIBLE);
-                }
-                else if (holder.sizeText.getVisibility() == View.VISIBLE){
-                    holder.progressBar.setVisibility(View.GONE);
-                    holder.progressView.setVisibility(View.GONE);
-                    holder.speedView.setVisibility(View.VISIBLE);
-                    holder.sizeText.setVisibility(View.GONE);
-                }
-                else if(holder.speedView.getVisibility() == View.VISIBLE) {
-                    holder.progressBar.setVisibility(View.VISIBLE);
-                    holder.progressView.setVisibility(View.VISIBLE);
-                    holder.sizeText.setVisibility(View.GONE);
-                    holder.speedView.setVisibility(View.GONE);
-                }
+        holder.cardView.setOnLongClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            if(!holder.mission.finished)
+                pause(holder);
+            showOptionDialog(holder.mission);
+            return true;
+        });
 
+        holder.progressLayout.setOnClickListener(v -> {
+            if(holder.progressBar.getVisibility() == View.VISIBLE) {
+                holder.progressBar.setVisibility(View.GONE);
+                holder.progressView.setVisibility(View.GONE);
+                holder.speedView.setVisibility(View.GONE);
+                holder.sizeText.setVisibility(View.VISIBLE);
             }
+            else if (holder.sizeText.getVisibility() == View.VISIBLE){
+                holder.progressBar.setVisibility(View.GONE);
+                holder.progressView.setVisibility(View.GONE);
+                holder.speedView.setVisibility(View.VISIBLE);
+                holder.sizeText.setVisibility(View.GONE);
+            }
+            else if(holder.speedView.getVisibility() == View.VISIBLE) {
+                holder.progressBar.setVisibility(View.VISIBLE);
+                holder.progressView.setVisibility(View.VISIBLE);
+                holder.sizeText.setVisibility(View.GONE);
+                holder.speedView.setVisibility(View.GONE);
+            }
+
         });
 
         updateProgress(holder);
@@ -385,18 +378,15 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 mContext.getString(R.string.retry), // Option 0
                 mContext.getString(R.string.delete) // Option 1
         };
-        builder.setItems(optionDialogActions, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i(TAG, "Choice is " + optionDialogActions[which]);
-                switch (which) {
-                    case 0:
-                        resume(itemTask);
-                        break;
-                    case 1:
-                        delete(itemTask.mission);
-                        break;
-                }
+        builder.setItems(optionDialogActions, (dialog, which) -> {
+            Log.i(TAG, "Choice is " + optionDialogActions[which]);
+            switch (which) {
+                case 0:
+                    resume(itemTask);
+                    break;
+                case 1:
+                    delete(itemTask.mission);
+                    break;
             }
         });
         builder.show();

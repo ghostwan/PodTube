@@ -72,12 +72,7 @@ public class FeedContentActivity extends AppCompatActivity {
             }
         });
 
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                fetchFeed();
-            }
-        });
+        swipeRefreshLayout.setOnRefreshListener(() -> fetchFeed());
         fab.setVisibility(View.GONE);
     }
 

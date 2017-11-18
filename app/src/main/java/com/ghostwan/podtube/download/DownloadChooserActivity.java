@@ -172,37 +172,33 @@ public class DownloadChooserActivity extends Activity{
         btn.setTextColor(Color.parseColor("#FFFFFF"));
         if(PrefManager.needToDisplayFileSize(this))
             addSizeToButton(btn, ytFrVideo.videoFile != null ? ytFrVideo.videoFile.getUrl() : ytFrVideo.audioFile.getUrl());
-        btn.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                String filename;
-                if (mediaTitle.length() > 55) {
-                    filename = mediaTitle.substring(0, 55);
-                } else {
-                    filename = mediaTitle;
-                }
-                filename = filename.replaceAll("\\\\|>|<|\"|\\||\\*|\\?|%|:|#|/", "");
-                filename += (ytFrVideo.height == -1) ? "" : "-" + ytFrVideo.height + "p";
-
-                if (ytFrVideo.videoFile != null) {
-                    String mediaType = Util.VIDEO_TYPE;
-                    if(ytFrVideo.audioFile != null) // If audioFile is not null it means it a two files video
-                        mediaType = Util.VIDEO_PART_TYPE;
-
-                    downloadFromUrl(mediaType, ytFrVideo.videoFile.getUrl(), mediaTitle,
-                            filename + "." + ytFrVideo.videoFile.getFormat().getExt());
-                }
-                if (ytFrVideo.audioFile != null) {
-                    String mediaType = Util.AUDIO_TYPE;
-                    if(ytFrVideo.videoFile != null) // If videoFile is not null it means it a two files video
-                        mediaType = Util.AUDIO_PART_TYPE;
-
-                    downloadFromUrl(mediaType, ytFrVideo.audioFile.getUrl(), mediaTitle,
-                            filename + "." + ytFrVideo.audioFile.getFormat().getExt());
-                }
-                finish();
+        btn.setOnClickListener(v -> {
+            String filename;
+            if (mediaTitle.length() > 55) {
+                filename = mediaTitle.substring(0, 55);
+            } else {
+                filename = mediaTitle;
             }
+            filename = filename.replaceAll("\\\\|>|<|\"|\\||\\*|\\?|%|:|#|/", "");
+            filename += (ytFrVideo.height == -1) ? "" : "-" + ytFrVideo.height + "p";
+
+            if (ytFrVideo.videoFile != null) {
+                String mediaType = Util.VIDEO_TYPE;
+                if(ytFrVideo.audioFile != null) // If audioFile is not null it means it a two files video
+                    mediaType = Util.VIDEO_PART_TYPE;
+
+                downloadFromUrl(mediaType, ytFrVideo.videoFile.getUrl(), mediaTitle,
+                        filename + "." + ytFrVideo.videoFile.getFormat().getExt());
+            }
+            if (ytFrVideo.audioFile != null) {
+                String mediaType = Util.AUDIO_TYPE;
+                if(ytFrVideo.videoFile != null) // If videoFile is not null it means it a two files video
+                    mediaType = Util.AUDIO_PART_TYPE;
+
+                downloadFromUrl(mediaType, ytFrVideo.audioFile.getUrl(), mediaTitle,
+                        filename + "." + ytFrVideo.audioFile.getFormat().getExt());
+            }
+            finish();
         });
         mainLayout.addView(btn);
     }
@@ -214,12 +210,7 @@ public class DownloadChooserActivity extends Activity{
             URLConnection urlConnection = url.openConnection();
             urlConnection.connect();
             final int file_size = urlConnection.getContentLength();
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    button.setText(button.getText()+" ( "+Util.formatBytes(file_size)+" )");
-                }
-            });
+            runOnUiThread(() -> button.setText(button.getText()+" ( "+Util.formatBytes(file_size)+" )"));
         } catch (IOException e) {
             Log.i(TAG, "error : ", e);
         }
