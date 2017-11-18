@@ -6,7 +6,6 @@ import com.ghostwan.podtube.Util;
 import com.google.gson.Gson;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -123,12 +122,7 @@ public class DownloadManagerImpl implements DownloadManager {
             finishedMissions = new ArrayList<>();
         }
         // Ensure its sorted
-        Collections.sort(finishedMissions, new Comparator<DownloadMission>() {
-            @Override
-            public int compare(DownloadMission o1, DownloadMission o2) {
-                return (int) (o1.timestamp - o2.timestamp);
-            }
-        });
+        Collections.sort(finishedMissions, (o1, o2) -> (int) (o1.timestamp - o2.timestamp));
         mMissions.ensureCapacity(mMissions.size() + finishedMissions.size());
         for (DownloadMission mission : finishedMissions) {
             File downloadedFile = mission.getDownloadedFile();
@@ -271,12 +265,7 @@ public class DownloadManagerImpl implements DownloadManager {
             throw new IllegalArgumentException("location is not a directory: " + location);
         }
         final String[] nameParts = splitName(name);
-        String[] existingName = destination.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.startsWith(nameParts[0]);
-            }
-        });
+        String[] existingName = destination.list((dir, name1) -> name1.startsWith(nameParts[0]));
         Arrays.sort(existingName);
         String newName;
         int downloadIndex = 0;

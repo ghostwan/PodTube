@@ -75,11 +75,10 @@ public class DownloadMission {
 
     public transient boolean recovered;
 
-    private transient ArrayList<WeakReference<MissionListener>> mListeners = new ArrayList<WeakReference<MissionListener>>();
+    private transient ArrayList<WeakReference<MissionListener>> mListeners = new ArrayList<>();
     private transient boolean mWritingToFile;
 
     private static final int NO_IDENTIFIER = -1;
-    private long db_identifier = NO_IDENTIFIER;
 
     public DownloadMission() {
     }
@@ -186,12 +185,7 @@ public class DownloadMission {
         for (WeakReference<MissionListener> ref : mListeners) {
             final MissionListener listener = ref.get();
             if (listener != null) {
-                MissionListener.handlerStore.get(listener).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onProgressUpdate(DownloadMission.this, done, length);
-                    }
-                });
+                MissionListener.handlerStore.get(listener).post(() -> listener.onProgressUpdate(DownloadMission.this, done, length));
             }
         }
     }
@@ -227,12 +221,7 @@ public class DownloadMission {
         for (WeakReference<MissionListener> ref : mListeners) {
             final MissionListener listener = ref.get();
             if (listener != null) {
-                MissionListener.handlerStore.get(listener).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onFinish(DownloadMission.this);
-                    }
-                });
+                MissionListener.handlerStore.get(listener).post(() -> listener.onFinish(DownloadMission.this));
             }
         }
     }
@@ -244,29 +233,18 @@ public class DownloadMission {
 
         for (WeakReference<MissionListener> ref : mListeners) {
             final MissionListener listener = ref.get();
-            MissionListener.handlerStore.get(listener).post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onError(DownloadMission.this, errCode);
-                }
-            });
+            MissionListener.handlerStore.get(listener).post(() -> listener.onError(DownloadMission.this, errCode));
         }
     }
 
     public synchronized void addListener(MissionListener listener) {
         Handler handler = new Handler(Looper.getMainLooper());
         MissionListener.handlerStore.put(listener, handler);
-        mListeners.add(new WeakReference<MissionListener>(listener));
+        mListeners.add(new WeakReference<>(listener));
     }
 
     public synchronized void removeListener(MissionListener listener) {
-        for (Iterator<WeakReference<MissionListener>> iterator = mListeners.iterator();
-             iterator.hasNext(); ) {
-            WeakReference<MissionListener> weakRef = iterator.next();
-            if (listener != null && listener == weakRef.get()) {
-                iterator.remove();
-            }
-        }
+        mListeners.removeIf(weakRef -> listener != null && listener == weakRef.get());
     }
 
     /**
@@ -373,8 +351,5 @@ public class DownloadMission {
 
         return TASK_STATUS_QUEUE;
 
-//        return  TASK_STATUS_QUEUE;
-//        return  TASK_STATUS_CONNECTING;
-//        return  TASK_STATUS_STORAGE_ERROR;
     }
 }

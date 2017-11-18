@@ -126,7 +126,6 @@ public class DownloadManagerService extends Service
 				}
 			}
 		};
-		
 	}
 
 	private ArrayList<String> getMissionsPath() {

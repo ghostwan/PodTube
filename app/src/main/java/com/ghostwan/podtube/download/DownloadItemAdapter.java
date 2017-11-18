@@ -2,13 +2,13 @@ package com.ghostwan.podtube.download;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.icu.text.DecimalFormat;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
+import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -54,6 +54,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     private final DownloadManager mDownloadManager;
     private Context mContext;
     private DownloadManagerService.DMBinder mBinder;
+    private DecimalFormat df1 = new DecimalFormat("0");
 
     DownloadItemAdapter(Context context, DownloadManagerService.DMBinder binder) {
         mContext = context;
@@ -142,23 +143,28 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         }
 
         holder.downloadButton.setOnClickListener(v -> {
-            switch (holder.getResource()) {
-                case R.drawable.ic_start:
-                case R.drawable.ic_resume:
-                    resume(holder);
-                    break;
-                case R.drawable.ic_pause:
-                    pause(holder);
-                    break;
-                case R.drawable.ic_play:
-                    play(holder.mission);
-                    break;
-                case R.drawable.ic_error:
-                    showErrorDialog(holder);
-                    break;
-                case R.drawable.ic_connecting:
-                    mergeMp4(holder);
-                    break;
+
+            try {
+                switch (holder.getResource()) {
+                    case R.drawable.ic_start:
+                    case R.drawable.ic_resume:
+                        resume(holder);
+                        break;
+                    case R.drawable.ic_pause:
+                        pause(holder);
+                        break;
+                    case R.drawable.ic_play:
+                        play(holder.mission);
+                        break;
+                    case R.drawable.ic_error:
+                        showErrorDialog(holder);
+                        break;
+                    case R.drawable.ic_connecting:
+                        mergeMp4(holder);
+                        break;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "error :", e);
             }
         });
 
@@ -314,26 +320,26 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 mContext.getString(R.string.play), // Option 0
                 mContext.getString(R.string.delete) // Option 1
         };
-        builder.setItems(optionDialogActions, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i(TAG, "Choice is " + optionDialogActions[which]);
-                switch (which) {
-                    case 0:
-                        play(mission);
-                        break;
-                    case 1:
-                        delete(mission);
-                        break;
-                }
+        builder.setItems(optionDialogActions, (dialog, which) -> {
+            Log.i(TAG, "Choice is " + optionDialogActions[which]);
+            switch (which) {
+                case 0:
+                    play(mission);
+                    break;
+                case 1:
+                    delete(mission);
+                    break;
             }
         });
         builder.show();
     }
 
 
+
+
     @OnBackground
     private void mergeMp4(CViewHolder holder) {
+        holder.setAnimatedDrawable(R.drawable.merging);
         notifyUI(holder.progressLayout,"Merging "+holder.mission.name + " ...");
         try {
             String inFilePathVideo=holder.mission.getFileTokens()[0]+".mp4";
@@ -353,8 +359,9 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             if (inVideoFile.delete()) {
                 File tempOutFile = new File(holder.mission.location + TEMP_FILE_NAME + currentMillis + ".mp4");
                 tempOutFile.renameTo(inVideoFile);
+                holder.setImage(R.drawable.ic_play);
                 holder.mission.type = Util.VIDEO_TYPE;
-                holder.mission.length = holder.mission.done;
+                holder.mission.done = holder.mission.length;
                 holder.mission.writeThisToFile();
                 notifyUI(holder.progressLayout, "Merged completed for: "+holder.mission.name);
                 mDownloadManager.loadMissions();
@@ -397,7 +404,6 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
         if (total > 0) {
             double fen = ((double) completed / (double) total) * 100;
-            DecimalFormat df1 = new DecimalFormat("0");
             return df1.format(fen);
         }
         return "0";
@@ -447,9 +453,18 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             ButterKnife.bind(this, itemView);
         }
 
+        @OnUi
         public void setImage(int res) {
             resource = res;
             downloadButton.setImageResource(res);
+        }
+
+        @OnUi
+        public void setAnimatedDrawable(int res) {
+            resource = res;
+            AnimatedVectorDrawableCompat drawable = AnimatedVectorDrawableCompat.create(mContext, res);
+            downloadButton.setImageDrawable(drawable);
+            drawable.start();
         }
 
         public void initMission(Context ctx, DownloadItemAdapter adapter, DownloadMission downloadMission) {
