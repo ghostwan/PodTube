@@ -52,4 +52,9 @@ public class TaskStatus {
      * finish download
      */
     public static final int TASK_STATUS_FINISH = TASK_STATUS_STORAGE_ERROR + 1;
+
+    /**
+     * finish download
+     */
+    public static final int TASK_STATUS_MERGING = TASK_STATUS_FINISH + 1;
 }

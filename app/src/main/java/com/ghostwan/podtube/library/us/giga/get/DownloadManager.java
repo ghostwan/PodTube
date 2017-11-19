@@ -1,5 +1,7 @@
 package com.ghostwan.podtube.library.us.giga.get;
 
+import java.io.IOException;
+
 public interface DownloadManager
 {
 	int BLOCK_SIZE = 512 * 1024;
@@ -67,5 +69,7 @@ public interface DownloadManager
 	 * @return the number of download missions.
      */
 	int getCount();
+
+	void mergeMission(DownloadMission mission) throws IOException, Exception;
 
 }

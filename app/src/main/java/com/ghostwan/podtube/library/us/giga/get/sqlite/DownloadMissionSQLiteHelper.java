@@ -101,7 +101,7 @@ public class DownloadMissionSQLiteHelper extends SQLiteOpenHelper {
         DownloadMission mission = new DownloadMission(name, url, location, type);
         mission.done = cursor.getLong(cursor.getColumnIndexOrThrow(KEY_DONE));
         mission.timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(KEY_TIMESTAMP));
-        mission.finished = true;
+        mission.isFinished = true;
         return mission;
     }
 }

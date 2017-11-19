@@ -37,7 +37,7 @@ public class DownloadRunnable implements Runnable
 			Log.d(TAG, mId + ":recovered: " + mMission.recovered);
 		}
 		
-		while (mMission.errCode == -1 && mMission.running && position < mMission.blocks) {
+		while (mMission.errCode == -1 && mMission.isRunning && position < mMission.blocks) {
 			
 			if (Thread.currentThread().isInterrupted()) {
 				mMission.pause();
@@ -109,7 +109,7 @@ public class DownloadRunnable implements Runnable
 				BufferedInputStream ipt = new BufferedInputStream(conn.getInputStream());
 				byte[] buf = new byte[512];
 				
-				while (start < end && mMission.running) {
+				while (start < end && mMission.isRunning) {
 					int len = ipt.read(buf, 0, 512);
 					
 					if (len == -1) {
@@ -122,8 +122,8 @@ public class DownloadRunnable implements Runnable
 					}
 				}
 				
-				if (DEBUG && mMission.running) {
-					Log.d(TAG, mId + ":position " + position + " finished, total length " + total);
+				if (DEBUG && mMission.isRunning) {
+					Log.d(TAG, mId + ":position " + position + " isFinished, total length " + total);
 				}
 				
 				f.close();
@@ -146,14 +146,14 @@ public class DownloadRunnable implements Runnable
 			Log.d(TAG, "thread " + mId + " exited main loop");
 		}
 		
-		if (mMission.errCode == -1 && mMission.running) {
+		if (mMission.errCode == -1 && mMission.isRunning) {
 			if (DEBUG) {
 				Log.d(TAG, "no error has happened, notifying");
 			}
 			notifyFinished();
 		}
 		
-		if (DEBUG && !mMission.running) {
+		if (DEBUG && !mMission.isRunning) {
 			Log.d(TAG, "The mission has been paused. Passing.");
 		}
 	}

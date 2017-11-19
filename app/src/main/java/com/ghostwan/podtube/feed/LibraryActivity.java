@@ -20,7 +20,7 @@ import butterknife.ButterKnife;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.download.DownloadListActivity;
-import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
+import com.ghostwan.podtube.library.us.giga.service.PodTubeService;
 import com.ghostwan.podtube.settings.PrefManager;
 import com.ghostwan.podtube.settings.SettingsActivity;
 
@@ -37,12 +37,12 @@ public class LibraryActivity extends AppCompatActivity {
     @BindView(R.id.fab)
     FloatingActionButton fab;
 
-    private DownloadManagerService.DMBinder mBinder;
+    private PodTubeService.DMBinder mBinder;
     private ServiceConnection mConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
-            mBinder = (DownloadManagerService.DMBinder) binder;
+            mBinder = (PodTubeService.DMBinder) binder;
             displayDownloadList();
         }
 
@@ -80,7 +80,7 @@ public class LibraryActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         // Bind the service
-        Intent intent = new Intent(this, DownloadManagerService.class);
+        Intent intent = new Intent(this, PodTubeService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 

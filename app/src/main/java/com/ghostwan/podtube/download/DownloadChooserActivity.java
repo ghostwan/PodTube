@@ -10,14 +10,11 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.*;
-import at.huber.youtubeExtractor.VideoMeta;
-import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YtFile;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
-import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
+import com.ghostwan.podtube.library.us.giga.service.PodTubeService;
 import com.ghostwan.podtube.settings.PrefManager;
 import teaspoon.annotations.OnBackground;
 
@@ -216,7 +213,7 @@ public class DownloadChooserActivity extends Activity{
                 path = PrefManager.getVideoPath(this);
             }
         }
-        DownloadManagerService.startMission(this, youtubeDlUrl, path, fileName, type, PrefManager.getThreadCount(this));
+        PodTubeService.startMission(this, youtubeDlUrl, path, fileName, type, PrefManager.getThreadCount(this));
     }
 
     private class YtFragmentedVideo {

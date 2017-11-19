@@ -24,20 +24,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import com.coremedia.iso.boxes.Container;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.library.us.giga.get.DownloadManager;
 import com.ghostwan.podtube.library.us.giga.get.DownloadMission;
-import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.ghostwan.podtube.library.us.giga.service.PodTubeService;
 import teaspoon.annotations.OnBackground;
 import teaspoon.annotations.OnUi;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import static com.ghostwan.podtube.download.TaskStatus.*;
@@ -50,13 +45,12 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
 
     private static final String TAG = "DownloadItemAdapter";
-    private static final String TEMP_FILE_NAME = "/merging_file";
     private final DownloadManager mDownloadManager;
     private Context mContext;
-    private DownloadManagerService.DMBinder mBinder;
+    private PodTubeService.DMBinder mBinder;
     private DecimalFormat df1 = new DecimalFormat("0");
 
-    DownloadItemAdapter(Context context, DownloadManagerService.DMBinder binder) {
+    DownloadItemAdapter(Context context, PodTubeService.DMBinder binder) {
         mContext = context;
         mBinder = binder;
         mDownloadManager = mBinder.getDownloadManager();
@@ -136,10 +130,14 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                     holder.setImage(R.drawable.ic_play);
                 }
                 break;
+            case TASK_STATUS_MERGING:
+                holder.setAnimatedDrawable(R.drawable.merging);
+                break;
             case TASK_STATUS_REQUEST_ERROR:
             case TASK_STATUS_STORAGE_ERROR:
                 holder.setImage(R.drawable.ic_error);
                 break;
+
         }
 
         holder.downloadButton.setOnClickListener(v -> {
@@ -170,7 +168,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
         holder.cardView.setOnLongClickListener(v -> {
             v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-            if(!holder.mission.finished)
+            if(!holder.mission.isFinished)
                 pause(holder);
             showOptionDialog(holder.mission);
             return true;
@@ -195,7 +193,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 holder.sizeText.setVisibility(View.GONE);
                 holder.speedView.setVisibility(View.GONE);
             }
-
+            updateProgress(holder);
         });
 
         updateProgress(holder);
@@ -212,8 +210,8 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     }
 
     private void updateProgress(CViewHolder h, boolean finished) {
-        if (h.mission == null) return;
-
+        if (h.mission == null)
+            return;
 
         long now = System.currentTimeMillis();
 
@@ -221,43 +219,42 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             h.lastTimeStamp = now;
         }
 
-        if (h.lastDone == -1) {
-            h.lastDone = h.mission.done;
-        }
 
         long deltaTime = now - h.lastTimeStamp;
-        long deltaDone = h.mission.done - h.lastDone;
 
-        if (deltaTime == 0 || deltaTime > 1000 || finished) {
+        if (deltaTime == 0 || deltaTime > 1000) {
+            h.lastTimeStamp = now;
+
+            long deltaDone = h.mission.done - h.lastDone;
+            if (h.lastDone == -1) {
+                h.lastDone = h.mission.done;
+            }
+            h.lastDone = h.mission.done;
+
             if (h.mission.errCode > 0) {
-                h.progressView.setText(R.string.display_error);
+                    h.progressView.setText(R.string.display_error);
             } else {
                 String percent = getPercent(h.mission.done, h.mission.length);
                 h.progressBar.setProgress(Integer.parseInt(percent));
                 h.progressView.setText(percent);
             }
-        }
 
-        if (deltaTime > 1000 && deltaDone > 0) {
             float speed = (float) deltaDone / deltaTime;
             String speedStr = Util.formatSpeed(speed * 1000);
 
             h.speedView.setText(speedStr);
 
-            h.lastTimeStamp = now;
-            h.lastDone = h.mission.done;
-
-            if(h.mission.finished)
+            if(h.mission.isFinished)
                 h.sizeText.setText(Util.getString(mContext, R.string.done,  Util.formatBytes(h.mission.length)));
             else
                 h.sizeText.setText(Util.formatBytes(h.mission.done)+" / "+Util.formatBytes(h.mission.length));
         }
         else {
-            if(h.mission.finished) {
+            if(h.mission.isFinished) {
                 h.speedView.setText(R.string.none);
                 h.sizeText.setText(Util.getString(mContext, R.string.done,  Util.formatBytes(h.mission.length)));
             }
-            else if(!h.mission.running) {
+            else if(!h.mission.isRunning) {
                 h.speedView.setText(R.string.none);
                 h.sizeText.setText(Util.formatBytes(h.mission.done)+" / "+Util.formatBytes(h.mission.length));
             }
@@ -295,8 +292,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             ContentResolver cr = mContext.getContentResolver();
             mimeType = cr.getType(uri);
         } else {
-            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri
-                    .toString());
+            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
                     fileExtension.toLowerCase());
         }
@@ -304,7 +300,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     }
 
     private void delete(DownloadMission mission) {
-        if(mission.running)
+        if(mission.isRunning)
             Toast.makeText(mContext, R.string.delete_error, Toast.LENGTH_SHORT).show();
         else {
             mDownloadManager.deleteMission(mission);
@@ -341,36 +337,19 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     private void mergeMp4(CViewHolder holder) {
         holder.setAnimatedDrawable(R.drawable.merging);
         notifyUI(holder.progressLayout,"Merging "+holder.mission.name + " ...");
+
         try {
-            String inFilePathVideo=holder.mission.getFileTokens()[0]+".mp4";
-            String inFilePathAudio=holder.mission.getFileTokens()[0]+".m4a";
-
-            Movie video = MovieCreator.build(inFilePathVideo);
-            Movie audio = MovieCreator.build(inFilePathAudio);
-            video.addTrack(audio.getTracks().get(0));
-            Container out = new DefaultMp4Builder().build(video);
-            long currentMillis = System.currentTimeMillis();
-            FileOutputStream fos = new FileOutputStream(new File(holder.mission.location + TEMP_FILE_NAME + currentMillis + ".mp4"));
-            out.writeContainer(fos.getChannel());
-            fos.close();
-            File inAudioFile = new File(inFilePathAudio);
-            inAudioFile.delete();
-            File inVideoFile = new File(inFilePathVideo);
-            if (inVideoFile.delete()) {
-                File tempOutFile = new File(holder.mission.location + TEMP_FILE_NAME + currentMillis + ".mp4");
-                tempOutFile.renameTo(inVideoFile);
-                holder.setImage(R.drawable.ic_play);
-                holder.mission.type = Util.VIDEO_TYPE;
-                holder.mission.done = holder.mission.length;
-                holder.mission.writeThisToFile();
-                notifyUI(holder.progressLayout, "Merged completed for: "+holder.mission.name);
-                mDownloadManager.loadMissions();
-                notifyDataSetChanged();
-
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "merge error ", e);
+            mDownloadManager.mergeMission(holder.mission);
+            holder.setImage(R.drawable.ic_play);
+            notifyUI(holder.progressLayout, "Merged completed for: "+holder.mission.name);
+        } catch (Exception e) {
+            Log.e(TAG, "error :", e);
+            holder.setImage(R.drawable.ic_error);
+            notifyUI(holder.progressLayout, "Merged failed !! for: "+holder.mission.name);
         }
+
+        mDownloadManager.loadMissions();
+        notifyDataSetChanged();
     }
 
     @OnUi

@@ -28,20 +28,20 @@ import java.util.List;
 import static com.ghostwan.podtube.Util.DEBUG;
 
 
-public class DownloadManagerService extends Service
+public class PodTubeService extends Service
 {
 
-	private static final String TAG = DownloadManagerService.class.getSimpleName();
+	private static final String TAG = PodTubeService.class.getSimpleName();
 
 	/**
 	 * Message code of update messages stored as {@link Message#what}.
 	 */
 	private static final int UPDATE_MESSAGE = 0;
 	private static final int NOTIFICATION_ID = 1000;
-	private static final String EXTRA_NAME = "DownloadManagerService.extra.name";
-	private static final String EXTRA_LOCATION = "DownloadManagerService.extra.location";
-	private static final String EXTRA_THREADS = "DownloadManagerService.extra.threads";
-	private static final String EXTRA_TYPE = "DownloadManagerService.extra.type";
+	private static final String EXTRA_NAME = "PodTubeService.extra.name";
+	private static final String EXTRA_LOCATION = "PodTubeService.extra.location";
+	private static final String EXTRA_THREADS = "PodTubeService.extra.threads";
+	private static final String EXTRA_TYPE = "PodTubeService.extra.type";
 
 
 	private DMBinder mBinder;
@@ -116,7 +116,7 @@ public class DownloadManagerService extends Service
 						int runningCount = 0;
 
 						for (int i = 0; i < mManager.getCount(); i++) {
-							if (mManager.getMission(i).running) {
+							if (mManager.getMission(i).isRunning) {
 								runningCount++;
 							}
 						}
@@ -147,13 +147,10 @@ public class DownloadManagerService extends Service
 
 	private void startMissionAsync(final String url, final String location, final String name,
 								   final String type, final int threads) {
-		mHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				int missionId = mManager.startMission(url, location, name, type, threads);
-				mBinder.onMissionAdded(mManager.getMission(missionId));
-			}
-		});
+		mHandler.post(() -> {
+            int missionId = mManager.startMission(url, location, name, type, threads);
+            mBinder.onMissionAdded(mManager.getMission(missionId));
+        });
 	}
 
 	@Override
@@ -213,7 +210,7 @@ public class DownloadManagerService extends Service
 				+"NAME: "+ name+ "\n"
 				+"TYPE: "+ type+ "\n"
 				+"THREADS: "+ threads+ "\n");
-		Intent intent = new Intent(context, DownloadManagerService.class);
+		Intent intent = new Intent(context, PodTubeService.class);
 		intent.setAction(Intent.ACTION_RUN);
 		intent.setData(Uri.parse(url));
 		intent.putExtra(EXTRA_NAME, name);
