@@ -3,19 +3,18 @@ package com.ghostwan.podtube.download;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.*;
-import at.huber.youtubeExtractor.VideoMeta;
-import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YtFile;
 import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
-import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
+import com.ghostwan.podtube.library.us.giga.service.PodTubeService;
 import com.ghostwan.podtube.settings.PrefManager;
 import teaspoon.annotations.OnBackground;
 
@@ -44,8 +43,8 @@ public class DownloadChooserActivity extends Activity{
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_download);
-        mainLayout = (LinearLayout) findViewById(R.id.main_layout);
-        mainProgressBar = (ProgressBar) findViewById(R.id.prgrBar);
+        mainLayout = findViewById(R.id.main_layout);
+        mainProgressBar = findViewById(R.id.prgrBar);
         markedAsReadList = PrefManager.loadMarkedAsReadList(this);
         if (Util.checkPermissions(this, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)) {
             getYoutubeDownloadUrl();
@@ -81,46 +80,36 @@ public class DownloadChooserActivity extends Activity{
 
         if(!markedAsReadList.contains(Util.getVideoID(url)))
             markedAsReadList.add(Util.getVideoID(url));
-        new YouTubeExtractor(this) {
 
-            @Override
-            public void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta vMeta) {
-                mainProgressBar.setVisibility(View.GONE);
-                if (ytFiles == null) {
-                    TextView tv = new TextView(DownloadChooserActivity.this);
-                    tv.setText(R.string.app_update);
-                    mainLayout.addView(tv);
-                    Button button= new Button(DownloadChooserActivity.this);
-                    button.setText(R.string.retry);
-                    button.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            getYoutubeDownloadUrl();
-                        }
-                    });
-                    mainLayout.addView(button);
-                    return;
-                }
-                formatsToShowList = new ArrayList<>();
-                for (int i = 0, itag; i < ytFiles.size(); i++) {
-                    itag = ytFiles.keyAt(i);
-                    YtFile ytFile = ytFiles.get(itag);
+        MyYoutubeExtractor myYoutubeExtractor = new MyYoutubeExtractor(this, (ytFiles, vMeta) -> {
 
-                    if (ytFile.getFormat().getHeight() == -1 || ytFile.getFormat().getHeight() >= 360) {
-                        addFormatToList(ytFile, ytFiles);
-                    }
-                }
-                Collections.sort(formatsToShowList, new Comparator<YtFragmentedVideo>() {
-                    @Override
-                    public int compare(YtFragmentedVideo lhs, YtFragmentedVideo rhs) {
-                        return lhs.height - rhs.height;
-                    }
-                });
-                for (YtFragmentedVideo files : formatsToShowList) {
-                    addButtonToMainLayout(vMeta.getTitle(), files);
+            mainProgressBar.setVisibility(View.GONE);
+            if (ytFiles == null) {
+                TextView tv = new TextView(DownloadChooserActivity.this);
+                tv.setText(R.string.app_update);
+                mainLayout.addView(tv);
+                Button button= new Button(DownloadChooserActivity.this);
+                button.setText(R.string.retry);
+                button.setOnClickListener(v -> getYoutubeDownloadUrl());
+                mainLayout.addView(button);
+                return;
+            }
+            formatsToShowList = new ArrayList<>();
+            for (int i = 0, itag; i < ytFiles.size(); i++) {
+                itag = ytFiles.keyAt(i);
+                YtFile ytFile = ytFiles.get(itag);
+
+                if (ytFile.getFormat().getHeight() == -1 || ytFile.getFormat().getHeight() >= 360) {
+                    addFormatToList(ytFile, ytFiles);
                 }
             }
-        }.extract(url, true, false);
+            Collections.sort(formatsToShowList, Comparator.comparingInt(lhs -> lhs.height));
+            for (YtFragmentedVideo files : formatsToShowList) {
+                addButtonToMainLayout(vMeta.getTitle(), files);
+            }
+        });
+
+        myYoutubeExtractor.extract(url, true, false);
     }
 
     private void addFormatToList(YtFile ytFile, SparseArray<YtFile> ytFiles) {
@@ -149,40 +138,54 @@ public class DownloadChooserActivity extends Activity{
     }
 
 
-    private void addButtonToMainLayout(final String videoTitle, final YtFragmentedVideo ytFrVideo) {
+    private void addButtonToMainLayout(final String mediaTitle, final YtFragmentedVideo ytFrVideo) {
         // Display some buttons and let the user choose the format
         String btnText;
+
         if (ytFrVideo.height == -1)
             btnText = "Audio " + ytFrVideo.audioFile.getFormat().getAudioBitrate() + " kbit/s";
         else
-            btnText = (ytFrVideo.videoFile.getFormat().getFps() == 60) ? ytFrVideo.height + "p60" :
-                    ytFrVideo.height + "p";
+            btnText = "Video " +((ytFrVideo.videoFile.getFormat().getFps() == 60) ? ytFrVideo.height + "p60" : ytFrVideo.height + "p");
         Button btn = new Button(this);
         btn.setText(btnText);
+        if (ytFrVideo.videoFile != null) {
+            int color = Color.parseColor("#377be8"); //The color u want
+            btn.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        else {
+            int color = Color.parseColor("#FF4081"); //The color u want
+            btn.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        btn.setTextColor(Color.parseColor("#FFFFFF"));
         if(PrefManager.needToDisplayFileSize(this))
             addSizeToButton(btn, ytFrVideo.videoFile != null ? ytFrVideo.videoFile.getUrl() : ytFrVideo.audioFile.getUrl());
-        btn.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                String filename;
-                if (videoTitle.length() > 55) {
-                    filename = videoTitle.substring(0, 55);
-                } else {
-                    filename = videoTitle;
-                }
-                filename = filename.replaceAll("\\\\|>|<|\"|\\||\\*|\\?|%|:|#|/", "");
-                filename += (ytFrVideo.height == -1) ? "" : "-" + ytFrVideo.height + "p";
-                if (ytFrVideo.videoFile != null) {
-                    downloadFromUrl(Util.VIDEO_TYPE, ytFrVideo.videoFile.getUrl(), videoTitle,
-                            filename + "." + ytFrVideo.videoFile.getFormat().getExt());
-                }
-                if (ytFrVideo.audioFile != null) {
-                    downloadFromUrl(Util.AUDIO_TYPE, ytFrVideo.audioFile.getUrl(), videoTitle,
-                            filename + "." + ytFrVideo.audioFile.getFormat().getExt());
-                }
-                finish();
+        btn.setOnClickListener(v -> {
+            String filename;
+            if (mediaTitle.length() > 55) {
+                filename = mediaTitle.substring(0, 55);
+            } else {
+                filename = mediaTitle;
             }
+            filename = filename.replaceAll("\\\\|>|<|\"|\\||\\*|\\?|%|:|#|/", "");
+            filename += (ytFrVideo.height == -1) ? "" : "-" + ytFrVideo.height + "p";
+
+            if (ytFrVideo.videoFile != null) {
+                String mediaType = Util.VIDEO_TYPE;
+                if(ytFrVideo.audioFile != null) // If audioFile is not null it means it a two files video
+                    mediaType = Util.VIDEO_PART_TYPE;
+
+                downloadFromUrl(mediaType, ytFrVideo.videoFile.getUrl(), mediaTitle,
+                        filename + "." + ytFrVideo.videoFile.getFormat().getExt());
+            }
+            if (ytFrVideo.audioFile != null) {
+                String mediaType = Util.AUDIO_TYPE;
+                if(ytFrVideo.videoFile != null) // If videoFile is not null it means it a two files video
+                    mediaType = Util.AUDIO_PART_TYPE;
+
+                downloadFromUrl(mediaType, ytFrVideo.audioFile.getUrl(), mediaTitle,
+                        filename + "." + ytFrVideo.audioFile.getFormat().getExt());
+            }
+            finish();
         });
         mainLayout.addView(btn);
     }
@@ -194,12 +197,7 @@ public class DownloadChooserActivity extends Activity{
             URLConnection urlConnection = url.openConnection();
             urlConnection.connect();
             final int file_size = urlConnection.getContentLength();
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    button.setText(button.getText()+" ( "+Util.formatBytes(file_size)+" )");
-                }
-            });
+            runOnUiThread(() -> button.setText(button.getText()+" ( "+Util.formatBytes(file_size)+" )"));
         } catch (IOException e) {
             Log.i(TAG, "error : ", e);
         }
@@ -208,14 +206,14 @@ public class DownloadChooserActivity extends Activity{
     private void downloadFromUrl(String type, String youtubeDlUrl, String downloadTitle, String fileName) {
         String path = getIntent().getStringExtra(EXTRA_PATH);
         if(path == null) {
-            if(Util.isAudio(type)) {
+            if(type.equals(Util.AUDIO_TYPE)) {
                 path = PrefManager.getAudioPath(this);
             }
             else {
                 path = PrefManager.getVideoPath(this);
             }
         }
-        DownloadManagerService.startMission(this, youtubeDlUrl, path, fileName, type, PrefManager.getThreadCount(this));
+        PodTubeService.startMission(this, youtubeDlUrl, path, fileName, type, PrefManager.getThreadCount(this));
     }
 
     private class YtFragmentedVideo {

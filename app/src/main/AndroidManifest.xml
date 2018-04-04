@@ -74,7 +74,7 @@
 				android:label="@string/title_activity_downloading">
 		</activity>
 
-		<service android:name=".library.us.giga.service.DownloadManagerService"/>
+		<service android:name=".library.us.giga.service.PodTubeService"/>
 
 		<activity
 				android:name=".settings.SettingsActivity"

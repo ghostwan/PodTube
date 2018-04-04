@@ -2,17 +2,18 @@ package com.ghostwan.podtube.download;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.icu.text.DecimalFormat;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
+import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +28,12 @@ import com.ghostwan.podtube.R;
 import com.ghostwan.podtube.Util;
 import com.ghostwan.podtube.library.us.giga.get.DownloadManager;
 import com.ghostwan.podtube.library.us.giga.get.DownloadMission;
-import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
+import com.ghostwan.podtube.library.us.giga.service.PodTubeService;
+import teaspoon.annotations.OnBackground;
+import teaspoon.annotations.OnUi;
+
+import java.io.File;
+import java.io.IOException;
 
 import static com.ghostwan.podtube.download.TaskStatus.*;
 
@@ -41,9 +47,10 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     private static final String TAG = "DownloadItemAdapter";
     private final DownloadManager mDownloadManager;
     private Context mContext;
-    private DownloadManagerService.DMBinder mBinder;
+    private PodTubeService.DMBinder mBinder;
+    private DecimalFormat df1 = new DecimalFormat("0");
 
-    DownloadItemAdapter(Context context, DownloadManagerService.DMBinder binder) {
+    DownloadItemAdapter(Context context, PodTubeService.DMBinder binder) {
         mContext = context;
         mBinder = binder;
         mDownloadManager = mBinder.getDownloadManager();
@@ -75,15 +82,29 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         holder.titleView.setText(holder.mission.name);
         holder.itemView.setTag(holder.mission.url);
 
-        if (holder.mission.type.equals(Util.VIDEO_TYPE)) {
-            int color = Color.parseColor("#377be8"); //The color u want
+        if (holder.mission.type.equals(Util.AUDIO_TYPE)) {
+            int color = Color.parseColor("#FF4081");
+            holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        else if(holder.mission.type.equals(Util.VIDEO_TYPE)) {
+            int color = Color.parseColor("#377be8");
+            holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        else if(holder.mission.type.equals(Util.VIDEO_PART_TYPE)) {
+            int color = Color.parseColor("#fc9e1b");
+            holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        else if(holder.mission.type.equals(Util.AUDIO_PART_TYPE)) {
+            int color = Color.parseColor("#d68617");
             holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
             holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
         else {
-            int color = Color.parseColor("#FF4081"); //The color u want
-            holder.progressBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
-            holder.downloadButton.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            holder.progressBar.getProgressDrawable().clearColorFilter();
+            holder.downloadButton.getBackground().clearColorFilter();
         }
 
         int status = holder.mission.getStatus();
@@ -92,12 +113,6 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             case TASK_STATUS_INIT:
                 holder.setImage(R.drawable.ic_start);
                 break;
-            case TASK_STATUS_QUEUE:
-                holder.setImage(R.drawable.ic_queue);
-                break;
-            case TASK_STATUS_CONNECTING:
-                holder.setImage(R.drawable.ic_connecting);
-                break;
             case TASK_STATUS_DOWNLOADING:
                 holder.setImage(R.drawable.ic_pause);
                 break;
@@ -105,17 +120,29 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                 holder.setImage(R.drawable.ic_resume);
                 break;
             case TASK_STATUS_FINISH:
-                holder.setImage(R.drawable.ic_play);
+                if(holder.mission.type.equals(Util.VIDEO_PART_TYPE)) {
+                    if(isAudioPartDone(holder.mission))
+                        holder.setImage(R.drawable.ic_connecting);
+                    else
+                        holder.setImage(R.drawable.ic_queue);
+                }
+                else {
+                    holder.setImage(R.drawable.ic_play);
+                }
+                break;
+            case TASK_STATUS_MERGING:
+                holder.setAnimatedDrawable(R.drawable.merging);
                 break;
             case TASK_STATUS_REQUEST_ERROR:
             case TASK_STATUS_STORAGE_ERROR:
                 holder.setImage(R.drawable.ic_error);
                 break;
+
         }
 
-        holder.downloadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        holder.downloadButton.setOnClickListener(v -> {
+
+            try {
                 switch (holder.getResource()) {
                     case R.drawable.ic_start:
                     case R.drawable.ic_resume:
@@ -128,48 +155,53 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
                         play(holder.mission);
                         break;
                     case R.drawable.ic_error:
-                        showErrorDialog(holder.mission);
+                        showErrorDialog(holder);
+                        break;
+                    case R.drawable.ic_connecting:
+                        mergeMp4(holder);
                         break;
                 }
+            } catch (Exception e) {
+                Log.e(TAG, "error :", e);
             }
         });
 
-        holder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if(!holder.mission.finished)
-                    pause(holder);
-                showOptionDialog(holder.mission);
-                return true;
-            }
+        holder.cardView.setOnLongClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            if(!holder.mission.isFinished)
+                pause(holder);
+            showOptionDialog(holder.mission);
+            return true;
         });
 
-        holder.progressLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(holder.progressBar.getVisibility() == View.VISIBLE) {
-                    holder.progressBar.setVisibility(View.GONE);
-                    holder.progressView.setVisibility(View.GONE);
-                    holder.speedView.setVisibility(View.GONE);
-                    holder.sizeText.setVisibility(View.VISIBLE);
-                }
-                else if (holder.sizeText.getVisibility() == View.VISIBLE){
-                    holder.progressBar.setVisibility(View.GONE);
-                    holder.progressView.setVisibility(View.GONE);
-                    holder.speedView.setVisibility(View.VISIBLE);
-                    holder.sizeText.setVisibility(View.GONE);
-                }
-                else if(holder.speedView.getVisibility() == View.VISIBLE) {
-                    holder.progressBar.setVisibility(View.VISIBLE);
-                    holder.progressView.setVisibility(View.VISIBLE);
-                    holder.sizeText.setVisibility(View.GONE);
-                    holder.speedView.setVisibility(View.GONE);
-                }
-
+        holder.progressLayout.setOnClickListener(v -> {
+            if(holder.progressBar.getVisibility() == View.VISIBLE) {
+                holder.progressBar.setVisibility(View.GONE);
+                holder.progressView.setVisibility(View.GONE);
+                holder.speedView.setVisibility(View.GONE);
+                holder.sizeText.setVisibility(View.VISIBLE);
             }
+            else if (holder.sizeText.getVisibility() == View.VISIBLE){
+                holder.progressBar.setVisibility(View.GONE);
+                holder.progressView.setVisibility(View.GONE);
+                holder.speedView.setVisibility(View.VISIBLE);
+                holder.sizeText.setVisibility(View.GONE);
+            }
+            else if(holder.speedView.getVisibility() == View.VISIBLE) {
+                holder.progressBar.setVisibility(View.VISIBLE);
+                holder.progressView.setVisibility(View.VISIBLE);
+                holder.sizeText.setVisibility(View.GONE);
+                holder.speedView.setVisibility(View.GONE);
+            }
+            updateProgress(holder);
         });
 
         updateProgress(holder);
+    }
+
+    private boolean isAudioPartDone(DownloadMission mission) {
+        return new File(mission.getFileTokens()[0]+".m4a").exists() &&
+                ! new File(mission.getFileTokens()[0]+".m4a.giga").exists();
     }
 
 
@@ -178,8 +210,8 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     }
 
     private void updateProgress(CViewHolder h, boolean finished) {
-        if (h.mission == null) return;
-
+        if (h.mission == null)
+            return;
 
         long now = System.currentTimeMillis();
 
@@ -187,43 +219,42 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             h.lastTimeStamp = now;
         }
 
-        if (h.lastDone == -1) {
-            h.lastDone = h.mission.done;
-        }
 
         long deltaTime = now - h.lastTimeStamp;
-        long deltaDone = h.mission.done - h.lastDone;
 
-        if (deltaTime == 0 || deltaTime > 1000 || finished) {
+        if (deltaTime == 0 || deltaTime > 1000) {
+            h.lastTimeStamp = now;
+
+            long deltaDone = h.mission.done - h.lastDone;
+            if (h.lastDone == -1) {
+                h.lastDone = h.mission.done;
+            }
+            h.lastDone = h.mission.done;
+
             if (h.mission.errCode > 0) {
-                h.progressView.setText(R.string.display_error);
+                    h.progressView.setText(R.string.display_error);
             } else {
                 String percent = getPercent(h.mission.done, h.mission.length);
                 h.progressBar.setProgress(Integer.parseInt(percent));
                 h.progressView.setText(percent);
             }
-        }
 
-        if (deltaTime > 1000 && deltaDone > 0) {
             float speed = (float) deltaDone / deltaTime;
             String speedStr = Util.formatSpeed(speed * 1000);
 
             h.speedView.setText(speedStr);
 
-            h.lastTimeStamp = now;
-            h.lastDone = h.mission.done;
-
-            if(h.mission.finished)
+            if(h.mission.isFinished)
                 h.sizeText.setText(Util.getString(mContext, R.string.done,  Util.formatBytes(h.mission.length)));
             else
                 h.sizeText.setText(Util.formatBytes(h.mission.done)+" / "+Util.formatBytes(h.mission.length));
         }
         else {
-            if(h.mission.finished) {
+            if(h.mission.isFinished) {
                 h.speedView.setText(R.string.none);
                 h.sizeText.setText(Util.getString(mContext, R.string.done,  Util.formatBytes(h.mission.length)));
             }
-            else if(!h.mission.running) {
+            else if(!h.mission.isRunning) {
                 h.speedView.setText(R.string.none);
                 h.sizeText.setText(Util.formatBytes(h.mission.done)+" / "+Util.formatBytes(h.mission.length));
             }
@@ -261,8 +292,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             ContentResolver cr = mContext.getContentResolver();
             mimeType = cr.getType(uri);
         } else {
-            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri
-                    .toString());
+            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
                     fileExtension.toLowerCase());
         }
@@ -270,7 +300,7 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
     }
 
     private void delete(DownloadMission mission) {
-        if(mission.running)
+        if(mission.isRunning)
             Toast.makeText(mContext, R.string.delete_error, Toast.LENGTH_SHORT).show();
         else {
             mDownloadManager.deleteMission(mission);
@@ -278,57 +308,71 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
         }
     }
 
-    private void retry(DownloadMission mission) {
-        delete(mission);
-        mission.fallback = false;
-        notifyDataSetChanged();
-    }
 
-
-    private void showOptionDialog(final DownloadMission itemTask) {
+    private void showOptionDialog(final DownloadMission mission) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.action_title);
         final CharSequence[] optionDialogActions = {
                 mContext.getString(R.string.play), // Option 0
                 mContext.getString(R.string.delete) // Option 1
         };
-        builder.setItems(optionDialogActions, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i(TAG, "Choice is " + optionDialogActions[which]);
-                switch (which) {
-                    case 0:
-                        play(itemTask);
-                        break;
-                    case 1:
-                        delete(itemTask);
-                        break;
-                }
+        builder.setItems(optionDialogActions, (dialog, which) -> {
+            Log.i(TAG, "Choice is " + optionDialogActions[which]);
+            switch (which) {
+                case 0:
+                    play(mission);
+                    break;
+                case 1:
+                    delete(mission);
+                    break;
             }
         });
         builder.show();
     }
 
 
-    private void showErrorDialog(final DownloadMission itemTask) {
+
+
+    @OnBackground
+    private void mergeMp4(CViewHolder holder) {
+        holder.setAnimatedDrawable(R.drawable.merging);
+        notifyUI(holder.progressLayout,"Merging "+holder.mission.name + " ...");
+
+        try {
+            mDownloadManager.mergeMission(holder.mission);
+            holder.setImage(R.drawable.ic_play);
+            notifyUI(holder.progressLayout, "Merged completed for: "+holder.mission.name);
+        } catch (Exception e) {
+            Log.e(TAG, "error :", e);
+            holder.setImage(R.drawable.ic_error);
+            notifyUI(holder.progressLayout, "Merged failed !! for: "+holder.mission.name);
+        }
+
+        mDownloadManager.loadMissions();
+        notifyDataSetChanged();
+    }
+
+    @OnUi
+    private void notifyUI(View view, String message) {
+        Util.showSnack(view, message, null);
+    }
+
+    private void showErrorDialog(final CViewHolder itemTask) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.action_title);
         final CharSequence[] optionDialogActions = {
                 mContext.getString(R.string.retry), // Option 0
                 mContext.getString(R.string.delete) // Option 1
         };
-        builder.setItems(optionDialogActions, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i(TAG, "Choice is " + optionDialogActions[which]);
-                switch (which) {
-                    case 0:
-                        retry(itemTask);
-                        break;
-                    case 1:
-                        delete(itemTask);
-                        break;
-                }
+        builder.setItems(optionDialogActions, (dialog, which) -> {
+            Log.i(TAG, "Choice is " + optionDialogActions[which]);
+            switch (which) {
+                case 0:
+                    resume(itemTask);
+                    break;
+                case 1:
+                    delete(itemTask.mission);
+                    break;
             }
         });
         builder.show();
@@ -339,7 +383,6 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
 
         if (total > 0) {
             double fen = ((double) completed / (double) total) * 100;
-            DecimalFormat df1 = new DecimalFormat("0");
             return df1.format(fen);
         }
         return "0";
@@ -389,9 +432,18 @@ public class DownloadItemAdapter extends RecyclerView.Adapter<DownloadItemAdapte
             ButterKnife.bind(this, itemView);
         }
 
+        @OnUi
         public void setImage(int res) {
             resource = res;
             downloadButton.setImageResource(res);
+        }
+
+        @OnUi
+        public void setAnimatedDrawable(int res) {
+            resource = res;
+            AnimatedVectorDrawableCompat drawable = AnimatedVectorDrawableCompat.create(mContext, res);
+            downloadButton.setImageDrawable(drawable);
+            drawable.start();
         }
 
         public void initMission(Context ctx, DownloadItemAdapter adapter, DownloadMission downloadMission) {

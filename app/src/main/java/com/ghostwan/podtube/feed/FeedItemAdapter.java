@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,26 +58,21 @@ public class FeedItemAdapter extends RecyclerView.Adapter<CViewHolder> {
                     .placeholder(R.drawable.background)
                     .into(holder.image);
         // Return the completed view to render on screen
-        holder.layout.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(final View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle(R.string.description_title);
-                builder.setCancelable(true);
-                builder.setMessage(item.mediaMetadata.description);
-                builder.show();
-                return false;
-            }
+        holder.layout.setOnLongClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.description_title);
+            builder.setCancelable(true);
+            builder.setMessage(item.mediaMetadata.description);
+            builder.show();
+            return false;
         });
-        holder.layout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent activityIntent = new Intent(context, DownloadChooserActivity.class);
-                activityIntent.putExtra(Intent.EXTRA_TEXT, item.url);
-                if(feedInfo.isSettingSet(FeedInfo.SETTING_FOLDER))
-                    activityIntent.putExtra(DownloadChooserActivity.EXTRA_PATH, feedInfo.getSettingValue(FeedInfo.SETTING_FOLDER));
-                context.startActivity(activityIntent);
-            }
+        holder.layout.setOnClickListener(v -> {
+            Intent activityIntent = new Intent(context, DownloadChooserActivity.class);
+            activityIntent.putExtra(Intent.EXTRA_TEXT, item.url);
+            if(feedInfo.isSettingSet(FeedInfo.SETTING_FOLDER))
+                activityIntent.putExtra(DownloadChooserActivity.EXTRA_PATH, feedInfo.getSettingValue(FeedInfo.SETTING_FOLDER));
+            context.startActivity(activityIntent);
         });
 
     }

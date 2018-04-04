@@ -36,6 +36,8 @@ public class Util {
     public static final String ID = "ID";
     public static final String AUDIO_TYPE = "audio";
     public static final String VIDEO_TYPE = "video";
+    public static final String VIDEO_PART_TYPE = "video-part";
+    public static final String AUDIO_PART_TYPE = "audio-part";
     public static final String RSS_URL_CHANNEL = "https://www.youtube.com/feeds/videos.xml?channel_id=";
     public static final String RSS_URL_USER = "https://www.youtube.com/feeds/videos.xml?user=";
     public static final String RSS_URL_PLAYLIST = "https://www.youtube.com/feeds/videos.xml?playlist_id=";
@@ -47,14 +49,6 @@ public class Util {
 
     public static String getString(Context ctx, int resID) {
         return ctx.getString(resID);
-    }
-
-    public static boolean isAudio(String text){
-        return text.equals(AUDIO_TYPE);
-    }
-
-    public static boolean isVideo(String text){
-        return text.equals(VIDEO_TYPE);
     }
 
     public static Feed getFeedFromYoutubeUrl(String url) {

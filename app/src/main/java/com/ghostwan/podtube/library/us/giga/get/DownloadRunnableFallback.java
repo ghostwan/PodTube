@@ -5,7 +5,7 @@ import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-// Single-threaded fallback mode
+// Single-threaded hasFallback mode
 public class DownloadRunnableFallback implements Runnable
 {
 	private final DownloadMission mMission;
@@ -32,7 +32,7 @@ public class DownloadRunnableFallback implements Runnable
 				byte[] buf = new byte[512];
 				int len = 0;
 				
-				while ((len = ipt.read(buf, 0, 512)) != -1 && mMission.running) {
+				while ((len = ipt.read(buf, 0, 512)) != -1 && mMission.isRunning) {
 					f.write(buf, 0, len);
 					notifyProgress(len);
 					
@@ -49,7 +49,7 @@ public class DownloadRunnableFallback implements Runnable
 			notifyError(DownloadMission.ERROR_UNKNOWN);
 		}
 		
-		if (mMission.errCode == -1 && mMission.running) {
+		if (mMission.errCode == -1 && mMission.isRunning) {
 			notifyFinished();
 		}
 	}

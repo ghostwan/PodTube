@@ -16,7 +16,7 @@ import android.view.MenuItem;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.ghostwan.podtube.R;
-import com.ghostwan.podtube.library.us.giga.service.DownloadManagerService;
+import com.ghostwan.podtube.library.us.giga.service.PodTubeService;
 
 import java.io.File;
 
@@ -24,7 +24,7 @@ public class DownloadListActivity extends AppCompatActivity {
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
-    private DownloadManagerService.DMBinder mBinder;
+    private PodTubeService.DMBinder mBinder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +34,7 @@ public class DownloadListActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Bind the service
-        Intent intent = new Intent(this, DownloadManagerService.class);
+        Intent intent = new Intent(this, PodTubeService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
     }
@@ -43,7 +43,7 @@ public class DownloadListActivity extends AppCompatActivity {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
-            mBinder = (DownloadManagerService.DMBinder) binder;
+            mBinder = (PodTubeService.DMBinder) binder;
             updateList(mBinder);
         }
 
@@ -52,7 +52,7 @@ public class DownloadListActivity extends AppCompatActivity {
         }
     };
 
-    private void updateList(DownloadManagerService.DMBinder mBinder) {
+    private void updateList(PodTubeService.DMBinder mBinder) {
         DownloadItemAdapter adapter = new DownloadItemAdapter(this, mBinder);
         recyclerView.setAdapter(adapter);
     }

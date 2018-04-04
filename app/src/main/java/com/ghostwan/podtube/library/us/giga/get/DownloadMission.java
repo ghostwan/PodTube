@@ -65,21 +65,21 @@ public class DownloadMission {
     public long done;
     public int threadCount = 3;
     public int finishCount;
-    private List<Long> threadPositions = new ArrayList<Long>();
-    public final Map<Long, Boolean> blockState = new HashMap<Long, Boolean>();
-    public boolean running;
-    public boolean finished;
-    public boolean fallback;
+    private List<Long> threadPositions = new ArrayList<>();
+    public final Map<Long, Boolean> blockState = new HashMap<>();
+    public boolean isRunning;
+    public boolean isFinished;
+    public boolean hasFallback;
+    public boolean isMerging;
     public int errCode = -1;
     public long timestamp;
 
     public transient boolean recovered;
 
-    private transient ArrayList<WeakReference<MissionListener>> mListeners = new ArrayList<WeakReference<MissionListener>>();
+    private transient ArrayList<WeakReference<MissionListener>> mListeners = new ArrayList<>();
     private transient boolean mWritingToFile;
 
     private static final int NO_IDENTIFIER = -1;
-    private long db_identifier = NO_IDENTIFIER;
 
     public DownloadMission() {
     }
@@ -167,7 +167,7 @@ public class DownloadMission {
     }
 
     public synchronized void notifyProgress(long deltaLen) {
-        if (!running) return;
+        if (!isRunning) return;
 
         if (recovered) {
             recovered = false;
@@ -186,18 +186,13 @@ public class DownloadMission {
         for (WeakReference<MissionListener> ref : mListeners) {
             final MissionListener listener = ref.get();
             if (listener != null) {
-                MissionListener.handlerStore.get(listener).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onProgressUpdate(DownloadMission.this, done, length);
-                    }
-                });
+                MissionListener.handlerStore.get(listener).post(() -> listener.onProgressUpdate(DownloadMission.this, done, length));
             }
         }
     }
 
     /**
-     * Called by a download thread when it finished.
+     * Called by a download thread when it isFinished.
      */
     public synchronized void notifyFinished() {
         if (errCode > 0) return;
@@ -219,20 +214,15 @@ public class DownloadMission {
             Log.d(TAG, "onFinish");
         }
 
-        running = false;
-        finished = true;
+        isRunning = false;
+        isFinished = true;
 
         deleteThisFromFile();
 
         for (WeakReference<MissionListener> ref : mListeners) {
             final MissionListener listener = ref.get();
             if (listener != null) {
-                MissionListener.handlerStore.get(listener).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onFinish(DownloadMission.this);
-                    }
-                });
+                MissionListener.handlerStore.get(listener).post(() -> listener.onFinish(DownloadMission.this));
             }
         }
     }
@@ -244,39 +234,28 @@ public class DownloadMission {
 
         for (WeakReference<MissionListener> ref : mListeners) {
             final MissionListener listener = ref.get();
-            MissionListener.handlerStore.get(listener).post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onError(DownloadMission.this, errCode);
-                }
-            });
+            MissionListener.handlerStore.get(listener).post(() -> listener.onError(DownloadMission.this, errCode));
         }
     }
 
     public synchronized void addListener(MissionListener listener) {
         Handler handler = new Handler(Looper.getMainLooper());
         MissionListener.handlerStore.put(listener, handler);
-        mListeners.add(new WeakReference<MissionListener>(listener));
+        mListeners.add(new WeakReference<>(listener));
     }
 
     public synchronized void removeListener(MissionListener listener) {
-        for (Iterator<WeakReference<MissionListener>> iterator = mListeners.iterator();
-             iterator.hasNext(); ) {
-            WeakReference<MissionListener> weakRef = iterator.next();
-            if (listener != null && listener == weakRef.get()) {
-                iterator.remove();
-            }
-        }
+        mListeners.removeIf(weakRef -> listener != null && listener == weakRef.get());
     }
 
     /**
      * Start downloading with multiple threads.
      */
     public void start() {
-        if (!running && !finished) {
-            running = true;
+        if (!isRunning && !isFinished) {
+            isRunning = true;
 
-            if (!fallback) {
+            if (!hasFallback) {
                 for (int i = 0; i < threadCount; i++) {
                     if (threadPositions.size() <= i && !recovered) {
                         threadPositions.add((long) i);
@@ -284,7 +263,7 @@ public class DownloadMission {
                     new Thread(new DownloadRunnable(this, i)).start();
                 }
             } else {
-                // In fallback mode, resuming is not supported.
+                // In hasFallback mode, resuming is not supported.
                 threadCount = 1;
                 done = 0;
                 blocks = 0;
@@ -294,13 +273,17 @@ public class DownloadMission {
     }
 
     public void pause() {
-        if (running) {
-            running = false;
+        if (isRunning) {
+            isRunning = false;
             recovered = true;
 
             // TODO: Notify & Write state to info file
             // if (err)
         }
+    }
+
+    public String[] getFileTokens(){
+        return (location + "/" + name).split("\\.(?=[^\\.]+$)");
     }
 
     /**
@@ -313,7 +296,7 @@ public class DownloadMission {
 
     /**
      * Write this {@link DownloadMission} to the meta file asynchronously
-     * if no thread is already running.
+     * if no thread is already isRunning.
      */
     public void writeThisToFile() {
         if (!mWritingToFile) {
@@ -358,19 +341,18 @@ public class DownloadMission {
     public int getStatus() {
         if (done == 0)
             return TASK_STATUS_INIT;
-        if (!running && recovered)
+        if (!isRunning && recovered)
             return TASK_STATUS_PAUSE;
-        if (running && !finished)
+        if (isRunning && !isFinished)
             return TASK_STATUS_DOWNLOADING;
-        if (finished)
+        if(isMerging)
+            return TASK_STATUS_MERGING;
+        if (isFinished)
             return TASK_STATUS_FINISH;
         if (errCode != -1)
             return TASK_STATUS_REQUEST_ERROR;
 
         return TASK_STATUS_QUEUE;
 
-//        return  TASK_STATUS_QUEUE;
-//        return  TASK_STATUS_CONNECTING;
-//        return  TASK_STATUS_STORAGE_ERROR;
     }
 }

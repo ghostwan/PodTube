@@ -2,33 +2,42 @@ package com.ghostwan.podtube.library.us.giga.get;
 
 import android.support.annotation.Nullable;
 import android.util.Log;
+import com.coremedia.iso.boxes.Container;
 import com.ghostwan.podtube.Util;
 import com.google.gson.Gson;
+import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.*;
 
 
 public class DownloadManagerImpl implements DownloadManager {
     private static final String TAG = DownloadManagerImpl.class.getSimpleName();
     private static final boolean DEBUG = false;
+    private static final String TEMP_FILE_NAME = "/merging_file";
     private final DownloadDataSource mDownloadDataSource;
 
     private final ArrayList<DownloadMission> mMissions = new ArrayList<DownloadMission>();
+    private Collection<String> mSearchLocations;
 
     /**
      * Create a new instance
      *
      * @param searchLocations    the directories to search for unfinished downloads
-     * @param downloadDataSource the data source for finished downloads
+     * @param downloadDataSource the data source for isFinished downloads
      */
     public DownloadManagerImpl(Collection<String> searchLocations, DownloadDataSource downloadDataSource) {
         mDownloadDataSource = downloadDataSource;
-        loadMissions(searchLocations);
+        mSearchLocations = searchLocations;
+        loadMissions();
     }
 
     @Override
@@ -36,7 +45,7 @@ public class DownloadManagerImpl implements DownloadManager {
         DownloadMission existingMission = getMissionByLocation(location, name);
         if (existingMission != null) {
             // Already downloaded or downloading
-            if (existingMission.finished) {
+            if (existingMission.isFinished) {
                 // Overwrite mission
                 deleteMission(mMissions.indexOf(existingMission));
             } else {
@@ -67,7 +76,7 @@ public class DownloadManagerImpl implements DownloadManager {
 
     @Override
     public void resumeMission(DownloadMission mission) {
-        if (!mission.running && mission.errCode == -1) {
+        if (!mission.isRunning && mission.errCode == -1) {
             mission.start();
         }
     }
@@ -80,14 +89,14 @@ public class DownloadManagerImpl implements DownloadManager {
 
     @Override
     public void pauseMission(DownloadMission mission) {
-        if (mission.running) {
+        if (mission.isRunning) {
             mission.pause();
         }
     }
 
     @Override
     public void deleteMission(DownloadMission mission) {
-        if (mission.finished) {
+        if (mission.isFinished) {
             mDownloadDataSource.deleteMission(mission);
         }
         mission.delete();
@@ -101,10 +110,11 @@ public class DownloadManagerImpl implements DownloadManager {
     }
 
 
-    private void loadMissions(Iterable<String> searchLocations) {
+    @Override
+    public void loadMissions() {
         mMissions.clear();
         loadFinishedMissions();
-        for (String location : searchLocations) {
+        for (String location : mSearchLocations) {
             loadMissions(location);
         }
 
@@ -112,7 +122,7 @@ public class DownloadManagerImpl implements DownloadManager {
 
 
     /**
-     * Loads finished missions from the data source
+     * Loads isFinished missions from the data source
      */
     private void loadFinishedMissions() {
         List<DownloadMission> finishedMissions = mDownloadDataSource.loadMissions();
@@ -120,12 +130,7 @@ public class DownloadManagerImpl implements DownloadManager {
             finishedMissions = new ArrayList<>();
         }
         // Ensure its sorted
-        Collections.sort(finishedMissions, new Comparator<DownloadMission>() {
-            @Override
-            public int compare(DownloadMission o1, DownloadMission o2) {
-                return (int) (o1.timestamp - o2.timestamp);
-            }
-        });
+        Collections.sort(finishedMissions, (o1, o2) -> (int) (o1.timestamp - o2.timestamp));
         mMissions.ensureCapacity(mMissions.size() + finishedMissions.size());
         for (DownloadMission mission : finishedMissions) {
             File downloadedFile = mission.getDownloadedFile();
@@ -136,8 +141,8 @@ public class DownloadManagerImpl implements DownloadManager {
                 mDownloadDataSource.deleteMission(mission);
             } else {
                 mission.length = downloadedFile.length();
-                mission.finished = true;
-                mission.running = false;
+                mission.isFinished = true;
+                mission.isRunning = false;
                 mMissions.add(mission);
             }
         }
@@ -167,14 +172,14 @@ public class DownloadManagerImpl implements DownloadManager {
 
                         DownloadMission mis = new Gson().fromJson(str, DownloadMission.class);
 
-                        if (mis.finished) {
+                        if (mis.isFinished) {
                             if (!sub.delete()) {
                                 Log.w(TAG, "Unable to delete .giga file: " + sub.getPath());
                             }
                             continue;
                         }
 
-                        mis.running = false;
+                        mis.isRunning = false;
                         mis.recovered = true;
                         insertMission(mis);
                     }
@@ -191,6 +196,98 @@ public class DownloadManagerImpl implements DownloadManager {
     @Override
     public int getCount() {
         return mMissions.size();
+    }
+
+    @Override
+    public void mergeMission(DownloadMission mission) throws Exception {
+        mission.isMerging = true;
+        String inFilePathVideo=mission.getFileTokens()[0]+".mp4";
+        String inFilePathAudio=mission.getFileTokens()[0]+".m4a";
+        long currentMillis = System.currentTimeMillis();
+        String outFile = mission.location + TEMP_FILE_NAME + currentMillis + ".mp4";
+        mux(inFilePathVideo, inFilePathVideo, outFile);
+        File inAudioFile = new File(inFilePathAudio);
+        inAudioFile.delete();
+        File inVideoFile = new File(inFilePathVideo);
+        inVideoFile.delete();
+        mission.type = Util.VIDEO_TYPE;
+        mission.done = mission.length;
+        mission.isMerging = false;
+        mission.writeThisToFile();
+//            File tempOutFile = new File(mission.location + TEMP_FILE_NAME + currentMillis + ".mp4");
+//            tempOutFile.renameTo(inVideoFile);
+
+    }
+
+    public void mux(String videoFile, String audioFile, String outputFile) throws IOException {
+        Movie video = new MovieCreator().build(videoFile);
+        Movie audio = new MovieCreator().build(audioFile);
+
+        Track audioTrack = audio.getTracks().get(0);
+        video.addTrack(audioTrack);
+
+        Container out = new DefaultMp4Builder().build(video);
+
+        FileOutputStream fos = new FileOutputStream(outputFile);
+        BufferedWritableFileByteChannel byteBufferByteChannel = new BufferedWritableFileByteChannel(fos);
+        out.writeContainer(byteBufferByteChannel);
+        byteBufferByteChannel.close();
+        fos.close();
+    }
+
+    private static class BufferedWritableFileByteChannel implements WritableByteChannel {
+        //    private static final int BUFFER_CAPACITY = 1000000;
+        private static final int BUFFER_CAPACITY = 10000000;
+
+        private boolean isOpen = true;
+        private final OutputStream outputStream;
+        private final ByteBuffer byteBuffer;
+        private final byte[] rawBuffer = new byte[BUFFER_CAPACITY];
+
+        private BufferedWritableFileByteChannel(OutputStream outputStream) {
+            this.outputStream = outputStream;
+            this.byteBuffer = ByteBuffer.wrap(rawBuffer);
+            Log.e("Audio Video", "13");
+        }
+
+        @Override
+        public int write(ByteBuffer inputBuffer) throws IOException {
+            int inputBytes = inputBuffer.remaining();
+
+            if (inputBytes > byteBuffer.remaining()) {
+                Log.e("Size ok ", "song size is ok");
+                dumpToFile();
+                byteBuffer.clear();
+
+                if (inputBytes > byteBuffer.remaining()) {
+                    Log.e("Size ok ", "song size is not okssss ok");
+                    throw new BufferOverflowException();
+                }
+            }
+
+            byteBuffer.put(inputBuffer);
+
+            return inputBytes;
+        }
+
+        @Override
+        public boolean isOpen() {
+            return isOpen;
+        }
+
+        @Override
+        public void close() throws IOException {
+            dumpToFile();
+            isOpen = false;
+        }
+
+        private void dumpToFile() {
+            try {
+                outputStream.write(rawBuffer, 0, byteBuffer.position());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private int insertMission(DownloadMission mission) {
@@ -268,12 +365,7 @@ public class DownloadManagerImpl implements DownloadManager {
             throw new IllegalArgumentException("location is not a directory: " + location);
         }
         final String[] nameParts = splitName(name);
-        String[] existingName = destination.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.startsWith(nameParts[0]);
-            }
-        });
+        String[] existingName = destination.list((dir, name1) -> name1.startsWith(nameParts[0]));
         Arrays.sort(existingName);
         String newName;
         int downloadIndex = 0;
@@ -313,7 +405,7 @@ public class DownloadManagerImpl implements DownloadManager {
 
                 if (conn.getResponseCode() != 206) {
                     // Fallback to single thread if no partial content support
-                    mission.fallback = true;
+                    mission.hasFallback = true;
 
                     if (DEBUG) {
                         Log.d(TAG, "falling back");
