@@ -17,6 +17,10 @@ WARNING: PUTTING PODTUBE OR ANY FORK OF IT INTO GOOGLE PLAYSTORE VIOLATES THEIR 
 
 ## What's new in 
 
+### 1.3.2:
+- Button to merge audio and video for youtube video that came in two split files
+- Improve application stability
+- Improve code maintainability using java 1.8
 ### 1.3.1:
 - Allow to set a custom download folder for a feed
 - Refresh feed list by swipping
