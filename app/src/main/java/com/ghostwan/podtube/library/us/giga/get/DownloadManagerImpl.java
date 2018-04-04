@@ -6,14 +6,16 @@ import com.coremedia.iso.boxes.Container;
 import com.ghostwan.podtube.Util;
 import com.google.gson.Gson;
 import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.*;
 
 
@@ -201,30 +203,91 @@ public class DownloadManagerImpl implements DownloadManager {
         mission.isMerging = true;
         String inFilePathVideo=mission.getFileTokens()[0]+".mp4";
         String inFilePathAudio=mission.getFileTokens()[0]+".m4a";
-
-        Movie video = MovieCreator.build(inFilePathVideo);
-        Movie audio = MovieCreator.build(inFilePathAudio);
-        video.addTrack(audio.getTracks().get(0));
-        Container out = new DefaultMp4Builder().build(video);
         long currentMillis = System.currentTimeMillis();
-        FileOutputStream fos = new FileOutputStream(new File(mission.location + TEMP_FILE_NAME + currentMillis + ".mp4"));
-        out.writeContainer(fos.getChannel());
-        fos.close();
+        String outFile = mission.location + TEMP_FILE_NAME + currentMillis + ".mp4";
+        mux(inFilePathVideo, inFilePathVideo, outFile);
         File inAudioFile = new File(inFilePathAudio);
         inAudioFile.delete();
         File inVideoFile = new File(inFilePathVideo);
-        if (inVideoFile.delete()) {
-            File tempOutFile = new File(mission.location + TEMP_FILE_NAME + currentMillis + ".mp4");
-            tempOutFile.renameTo(inVideoFile);
-            mission.type = Util.VIDEO_TYPE;
-            mission.done = mission.length;
-            mission.writeThisToFile();
-//            holder.setImage(R.drawable.ic_play);
-//            notifyUI(holder.progressLayout, "Merged completed for: "+holder.mission.name);
-//            mDownloadManager.loadMissions();
-//            notifyDataSetChanged();
-        }
+        inVideoFile.delete();
+        mission.type = Util.VIDEO_TYPE;
+        mission.done = mission.length;
         mission.isMerging = false;
+        mission.writeThisToFile();
+//            File tempOutFile = new File(mission.location + TEMP_FILE_NAME + currentMillis + ".mp4");
+//            tempOutFile.renameTo(inVideoFile);
+
+    }
+
+    public void mux(String videoFile, String audioFile, String outputFile) throws IOException {
+        Movie video = new MovieCreator().build(videoFile);
+        Movie audio = new MovieCreator().build(audioFile);
+
+        Track audioTrack = audio.getTracks().get(0);
+        video.addTrack(audioTrack);
+
+        Container out = new DefaultMp4Builder().build(video);
+
+        FileOutputStream fos = new FileOutputStream(outputFile);
+        BufferedWritableFileByteChannel byteBufferByteChannel = new BufferedWritableFileByteChannel(fos);
+        out.writeContainer(byteBufferByteChannel);
+        byteBufferByteChannel.close();
+        fos.close();
+    }
+
+    private static class BufferedWritableFileByteChannel implements WritableByteChannel {
+        //    private static final int BUFFER_CAPACITY = 1000000;
+        private static final int BUFFER_CAPACITY = 10000000;
+
+        private boolean isOpen = true;
+        private final OutputStream outputStream;
+        private final ByteBuffer byteBuffer;
+        private final byte[] rawBuffer = new byte[BUFFER_CAPACITY];
+
+        private BufferedWritableFileByteChannel(OutputStream outputStream) {
+            this.outputStream = outputStream;
+            this.byteBuffer = ByteBuffer.wrap(rawBuffer);
+            Log.e("Audio Video", "13");
+        }
+
+        @Override
+        public int write(ByteBuffer inputBuffer) throws IOException {
+            int inputBytes = inputBuffer.remaining();
+
+            if (inputBytes > byteBuffer.remaining()) {
+                Log.e("Size ok ", "song size is ok");
+                dumpToFile();
+                byteBuffer.clear();
+
+                if (inputBytes > byteBuffer.remaining()) {
+                    Log.e("Size ok ", "song size is not okssss ok");
+                    throw new BufferOverflowException();
+                }
+            }
+
+            byteBuffer.put(inputBuffer);
+
+            return inputBytes;
+        }
+
+        @Override
+        public boolean isOpen() {
+            return isOpen;
+        }
+
+        @Override
+        public void close() throws IOException {
+            dumpToFile();
+            isOpen = false;
+        }
+
+        private void dumpToFile() {
+            try {
+                outputStream.write(rawBuffer, 0, byteBuffer.position());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private int insertMission(DownloadMission mission) {
